@@ -1,5 +1,5 @@
 
-// Generated from ../grammar/clike.g4 by ANTLR 4.7.1
+// Generated from ../grammar/tl.g4 by ANTLR 4.7.1
 
 #pragma once
 
@@ -9,21 +9,22 @@
 
 
 
-class  clikeLexer : public antlr4::Lexer {
+class  tlLexer : public antlr4::Lexer {
 public:
   enum {
-    T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, T__6 = 7, 
-    T__7 = 8, T__8 = 9, T__9 = 10, Name = 11, Number = 12, Single_string = 13, 
-    Double_string = 14, Colon = 15, Semicolon = 16, Equals = 17, LeftParen = 18, 
-    RightParen = 19, LeftBracket = 20, RightBracket = 21, LeftBrace = 22, 
-    RightBrace = 23, Op_plus = 24, Op_minus = 25, Op_multiplication = 26, 
-    Op_div = 27, Op_mod = 28, Compare_equals = 29, Compare_lower = 30, Compare_lowere = 31, 
-    Compare_greater = 32, Compare_greatere = 33, Whitespace = 34, Newline = 35, 
-    BlockComment = 36, LineComment = 37
+    Println = 1, Print = 2, Input = 3, Assert = 4, Size = 5, Def = 6, If = 7, 
+    Else = 8, Return = 9, For = 10, While = 11, To = 12, Do = 13, End = 14, 
+    In = 15, Null = 16, Or = 17, And = 18, Equals = 19, NEquals = 20, GTEquals = 21, 
+    LTEquals = 22, Pow = 23, Excl = 24, GT = 25, LT = 26, Add = 27, Subtract = 28, 
+    Multiply = 29, Divide = 30, Modulus = 31, OBrace = 32, CBrace = 33, 
+    OBracket = 34, CBracket = 35, OParen = 36, CParen = 37, SColon = 38, 
+    Assign = 39, Comma = 40, QMark = 41, Colon = 42, TypeIdentifier = 43, 
+    Bool = 44, Number = 45, Identifier = 46, String = 47, Comment = 48, 
+    Space = 49
   };
 
-  clikeLexer(antlr4::CharStream *input);
-  ~clikeLexer();
+  tlLexer(antlr4::CharStream *input);
+  ~tlLexer();
 
   virtual std::string getGrammarFileName() const override;
   virtual const std::vector<std::string>& getRuleNames() const override;

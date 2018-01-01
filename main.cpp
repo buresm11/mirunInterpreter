@@ -3,10 +3,11 @@
 #include <string>
 
 #include "antlr4-runtime.h"
-#include "clikeParser.h"
-#include "clikeLexer.h"
-#include "clikeParser.h"
+#include "tlParser.h"
+#include "tlLexer.h"
 #include "CharStream.h"
+#include "Visitor.h"
+#include "Runtime.h"
 
 using namespace antlr4;
 
@@ -20,7 +21,7 @@ int main(int , const char **) {
   }
 
   ANTLRInputStream input(inputFile);
-  clikeLexer lexer(&input);
+  tlLexer lexer(&input);
   CommonTokenStream tokens(&lexer);
 
   tokens.fill();
@@ -28,12 +29,19 @@ int main(int , const char **) {
     std::cout << token->toString() << std::endl;
   }
 
-  clikeParser parser(&tokens);
-  tree::ParseTree *tree = parser.program();
+  tlParser parser(&tokens);
+  tree::ParseTree *tree = parser.parse();
 
   std::cout << tree->toStringTree(&parser) << std::endl;
 
   inputFile.close();
+
+  Runtime * runtime = new Runtime();
+
+  Visitor * visitor = new Visitor(runtime);
+  visitor->visit(tree);
+
+  //delete visitor;
 
   return 0;
 }

@@ -27,15 +27,30 @@ FILE(GLOB parser_files ${PROJECT_SOURCE_DIR}/grammar/*.cpp)
     )
 endforeach(generated_file)
 
-message("xx" ${gsrc})
+
+FILE(GLOB src_files ${PROJECT_SOURCE_DIR}/src/*.cpp)
+
+# export generated cpp files into list
+ foreach(src_file ${src_files})
+   list(APPEND ssrc ${src_file})
+   set_source_files_properties(
+    ${src_file}
+    PROPERTIES
+    COMPILE_FLAGS -Wno-overloaded-virtual
+    )
+endforeach(src_file)
+
+
+message("xsss" ${ssrc})
 
   # export generated include directory
   set(antlr4cpp_include_dirs_${antlr4cpp_project_namespace} ${ANTLR4CPP_GENERATED_SRC_DIR}/${antlr4cpp_project_namespace})
   message(STATUS "Antlr4Cpp ${antlr4cpp_project_namespace} include: ${ANTLR4CPP_GENERATED_SRC_DIR}/${antlr4cpp_project_namespace}")
 
 include_directories(${PROJECT_SOURCE_DIR}/grammar)
+include_directories(${PROJECT_SOURCE_DIR}/src)
 
 # add generated grammar to demo binary target
-add_executable(test_antlr main.cpp ${gsrc})
+add_executable(test_antlr main.cpp ${gsrc} ${ssrc})
 add_dependencies(test_antlr antlr4cpp)
 target_link_libraries(test_antlr antlr4-runtime)
