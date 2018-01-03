@@ -95,7 +95,19 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitLtExpression(tlParser::LtExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitGtExpression(tlParser::GtExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitBoolExpression(tlParser::BoolExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitNotEqExpression(tlParser::NotEqExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -123,46 +135,6 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitAndExpression(tlParser::AndExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitStringExpression(tlParser::StringExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitExpressionExpression(tlParser::ExpressionExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitNullExpression(tlParser::NullExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitFunctionCallExpression(tlParser::FunctionCallExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitListExpression(tlParser::ListExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitLtEqExpression(tlParser::LtEqExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitLtExpression(tlParser::LtExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitBoolExpression(tlParser::BoolExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitNotEqExpression(tlParser::NotEqExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitDivideExpression(tlParser::DivideExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -175,15 +147,15 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitPowerExpression(tlParser::PowerExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitEqExpression(tlParser::EqExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitInExpression(tlParser::InExpressionContext *ctx) override {
+  virtual antlrcpp::Any visitAndExpression(tlParser::AndExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitStringExpression(tlParser::StringExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -195,7 +167,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitTernaryExpression(tlParser::TernaryExpressionContext *ctx) override {
+  virtual antlrcpp::Any visitFunctionCallExpression(tlParser::FunctionCallExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitLtEqExpression(tlParser::LtEqExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -207,7 +183,7 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitIndexes(tlParser::IndexesContext *ctx) override {
+  virtual antlrcpp::Any visitIndex(tlParser::IndexContext *ctx) override {
     return visitChildren(ctx);
   }
 

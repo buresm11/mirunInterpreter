@@ -13,4 +13,8 @@ public:
 	Type getType(){
 		return type;
 	}
+
+	virtual Obj * copy() {
+		return new Obj(type);
+	}
 };

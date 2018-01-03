@@ -76,8 +76,17 @@ public:
   virtual void enterExprList(tlParser::ExprListContext * /*ctx*/) override { }
   virtual void exitExprList(tlParser::ExprListContext * /*ctx*/) override { }
 
+  virtual void enterLtExpression(tlParser::LtExpressionContext * /*ctx*/) override { }
+  virtual void exitLtExpression(tlParser::LtExpressionContext * /*ctx*/) override { }
+
   virtual void enterGtExpression(tlParser::GtExpressionContext * /*ctx*/) override { }
   virtual void exitGtExpression(tlParser::GtExpressionContext * /*ctx*/) override { }
+
+  virtual void enterBoolExpression(tlParser::BoolExpressionContext * /*ctx*/) override { }
+  virtual void exitBoolExpression(tlParser::BoolExpressionContext * /*ctx*/) override { }
+
+  virtual void enterNotEqExpression(tlParser::NotEqExpressionContext * /*ctx*/) override { }
+  virtual void exitNotEqExpression(tlParser::NotEqExpressionContext * /*ctx*/) override { }
 
   virtual void enterNumberExpression(tlParser::NumberExpressionContext * /*ctx*/) override { }
   virtual void exitNumberExpression(tlParser::NumberExpressionContext * /*ctx*/) override { }
@@ -97,36 +106,6 @@ public:
   virtual void enterGtEqExpression(tlParser::GtEqExpressionContext * /*ctx*/) override { }
   virtual void exitGtEqExpression(tlParser::GtEqExpressionContext * /*ctx*/) override { }
 
-  virtual void enterAndExpression(tlParser::AndExpressionContext * /*ctx*/) override { }
-  virtual void exitAndExpression(tlParser::AndExpressionContext * /*ctx*/) override { }
-
-  virtual void enterStringExpression(tlParser::StringExpressionContext * /*ctx*/) override { }
-  virtual void exitStringExpression(tlParser::StringExpressionContext * /*ctx*/) override { }
-
-  virtual void enterExpressionExpression(tlParser::ExpressionExpressionContext * /*ctx*/) override { }
-  virtual void exitExpressionExpression(tlParser::ExpressionExpressionContext * /*ctx*/) override { }
-
-  virtual void enterNullExpression(tlParser::NullExpressionContext * /*ctx*/) override { }
-  virtual void exitNullExpression(tlParser::NullExpressionContext * /*ctx*/) override { }
-
-  virtual void enterFunctionCallExpression(tlParser::FunctionCallExpressionContext * /*ctx*/) override { }
-  virtual void exitFunctionCallExpression(tlParser::FunctionCallExpressionContext * /*ctx*/) override { }
-
-  virtual void enterListExpression(tlParser::ListExpressionContext * /*ctx*/) override { }
-  virtual void exitListExpression(tlParser::ListExpressionContext * /*ctx*/) override { }
-
-  virtual void enterLtEqExpression(tlParser::LtEqExpressionContext * /*ctx*/) override { }
-  virtual void exitLtEqExpression(tlParser::LtEqExpressionContext * /*ctx*/) override { }
-
-  virtual void enterLtExpression(tlParser::LtExpressionContext * /*ctx*/) override { }
-  virtual void exitLtExpression(tlParser::LtExpressionContext * /*ctx*/) override { }
-
-  virtual void enterBoolExpression(tlParser::BoolExpressionContext * /*ctx*/) override { }
-  virtual void exitBoolExpression(tlParser::BoolExpressionContext * /*ctx*/) override { }
-
-  virtual void enterNotEqExpression(tlParser::NotEqExpressionContext * /*ctx*/) override { }
-  virtual void exitNotEqExpression(tlParser::NotEqExpressionContext * /*ctx*/) override { }
-
   virtual void enterDivideExpression(tlParser::DivideExpressionContext * /*ctx*/) override { }
   virtual void exitDivideExpression(tlParser::DivideExpressionContext * /*ctx*/) override { }
 
@@ -136,14 +115,14 @@ public:
   virtual void enterUnaryMinusExpression(tlParser::UnaryMinusExpressionContext * /*ctx*/) override { }
   virtual void exitUnaryMinusExpression(tlParser::UnaryMinusExpressionContext * /*ctx*/) override { }
 
-  virtual void enterPowerExpression(tlParser::PowerExpressionContext * /*ctx*/) override { }
-  virtual void exitPowerExpression(tlParser::PowerExpressionContext * /*ctx*/) override { }
-
   virtual void enterEqExpression(tlParser::EqExpressionContext * /*ctx*/) override { }
   virtual void exitEqExpression(tlParser::EqExpressionContext * /*ctx*/) override { }
 
-  virtual void enterInExpression(tlParser::InExpressionContext * /*ctx*/) override { }
-  virtual void exitInExpression(tlParser::InExpressionContext * /*ctx*/) override { }
+  virtual void enterAndExpression(tlParser::AndExpressionContext * /*ctx*/) override { }
+  virtual void exitAndExpression(tlParser::AndExpressionContext * /*ctx*/) override { }
+
+  virtual void enterStringExpression(tlParser::StringExpressionContext * /*ctx*/) override { }
+  virtual void exitStringExpression(tlParser::StringExpressionContext * /*ctx*/) override { }
 
   virtual void enterAddExpression(tlParser::AddExpressionContext * /*ctx*/) override { }
   virtual void exitAddExpression(tlParser::AddExpressionContext * /*ctx*/) override { }
@@ -151,8 +130,11 @@ public:
   virtual void enterSubtractExpression(tlParser::SubtractExpressionContext * /*ctx*/) override { }
   virtual void exitSubtractExpression(tlParser::SubtractExpressionContext * /*ctx*/) override { }
 
-  virtual void enterTernaryExpression(tlParser::TernaryExpressionContext * /*ctx*/) override { }
-  virtual void exitTernaryExpression(tlParser::TernaryExpressionContext * /*ctx*/) override { }
+  virtual void enterFunctionCallExpression(tlParser::FunctionCallExpressionContext * /*ctx*/) override { }
+  virtual void exitFunctionCallExpression(tlParser::FunctionCallExpressionContext * /*ctx*/) override { }
+
+  virtual void enterLtEqExpression(tlParser::LtEqExpressionContext * /*ctx*/) override { }
+  virtual void exitLtEqExpression(tlParser::LtEqExpressionContext * /*ctx*/) override { }
 
   virtual void enterInputExpression(tlParser::InputExpressionContext * /*ctx*/) override { }
   virtual void exitInputExpression(tlParser::InputExpressionContext * /*ctx*/) override { }
@@ -160,8 +142,8 @@ public:
   virtual void enterList(tlParser::ListContext * /*ctx*/) override { }
   virtual void exitList(tlParser::ListContext * /*ctx*/) override { }
 
-  virtual void enterIndexes(tlParser::IndexesContext * /*ctx*/) override { }
-  virtual void exitIndexes(tlParser::IndexesContext * /*ctx*/) override { }
+  virtual void enterIndex(tlParser::IndexContext * /*ctx*/) override { }
+  virtual void exitIndex(tlParser::IndexContext * /*ctx*/) override { }
 
 
   virtual void enterEveryRule(antlr4::ParserRuleContext * /*ctx*/) override { }

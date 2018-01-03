@@ -1,4 +1,4 @@
 
 #pragma once
 
-enum Type { IntType,StringType,ArrayType,NullType,BoolType};
+enum Type {IntType,StringType,ArrayType,BoolType, NoneType};

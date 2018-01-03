@@ -74,8 +74,17 @@ public:
   virtual void enterExprList(tlParser::ExprListContext *ctx) = 0;
   virtual void exitExprList(tlParser::ExprListContext *ctx) = 0;
 
+  virtual void enterLtExpression(tlParser::LtExpressionContext *ctx) = 0;
+  virtual void exitLtExpression(tlParser::LtExpressionContext *ctx) = 0;
+
   virtual void enterGtExpression(tlParser::GtExpressionContext *ctx) = 0;
   virtual void exitGtExpression(tlParser::GtExpressionContext *ctx) = 0;
+
+  virtual void enterBoolExpression(tlParser::BoolExpressionContext *ctx) = 0;
+  virtual void exitBoolExpression(tlParser::BoolExpressionContext *ctx) = 0;
+
+  virtual void enterNotEqExpression(tlParser::NotEqExpressionContext *ctx) = 0;
+  virtual void exitNotEqExpression(tlParser::NotEqExpressionContext *ctx) = 0;
 
   virtual void enterNumberExpression(tlParser::NumberExpressionContext *ctx) = 0;
   virtual void exitNumberExpression(tlParser::NumberExpressionContext *ctx) = 0;
@@ -95,36 +104,6 @@ public:
   virtual void enterGtEqExpression(tlParser::GtEqExpressionContext *ctx) = 0;
   virtual void exitGtEqExpression(tlParser::GtEqExpressionContext *ctx) = 0;
 
-  virtual void enterAndExpression(tlParser::AndExpressionContext *ctx) = 0;
-  virtual void exitAndExpression(tlParser::AndExpressionContext *ctx) = 0;
-
-  virtual void enterStringExpression(tlParser::StringExpressionContext *ctx) = 0;
-  virtual void exitStringExpression(tlParser::StringExpressionContext *ctx) = 0;
-
-  virtual void enterExpressionExpression(tlParser::ExpressionExpressionContext *ctx) = 0;
-  virtual void exitExpressionExpression(tlParser::ExpressionExpressionContext *ctx) = 0;
-
-  virtual void enterNullExpression(tlParser::NullExpressionContext *ctx) = 0;
-  virtual void exitNullExpression(tlParser::NullExpressionContext *ctx) = 0;
-
-  virtual void enterFunctionCallExpression(tlParser::FunctionCallExpressionContext *ctx) = 0;
-  virtual void exitFunctionCallExpression(tlParser::FunctionCallExpressionContext *ctx) = 0;
-
-  virtual void enterListExpression(tlParser::ListExpressionContext *ctx) = 0;
-  virtual void exitListExpression(tlParser::ListExpressionContext *ctx) = 0;
-
-  virtual void enterLtEqExpression(tlParser::LtEqExpressionContext *ctx) = 0;
-  virtual void exitLtEqExpression(tlParser::LtEqExpressionContext *ctx) = 0;
-
-  virtual void enterLtExpression(tlParser::LtExpressionContext *ctx) = 0;
-  virtual void exitLtExpression(tlParser::LtExpressionContext *ctx) = 0;
-
-  virtual void enterBoolExpression(tlParser::BoolExpressionContext *ctx) = 0;
-  virtual void exitBoolExpression(tlParser::BoolExpressionContext *ctx) = 0;
-
-  virtual void enterNotEqExpression(tlParser::NotEqExpressionContext *ctx) = 0;
-  virtual void exitNotEqExpression(tlParser::NotEqExpressionContext *ctx) = 0;
-
   virtual void enterDivideExpression(tlParser::DivideExpressionContext *ctx) = 0;
   virtual void exitDivideExpression(tlParser::DivideExpressionContext *ctx) = 0;
 
@@ -134,14 +113,14 @@ public:
   virtual void enterUnaryMinusExpression(tlParser::UnaryMinusExpressionContext *ctx) = 0;
   virtual void exitUnaryMinusExpression(tlParser::UnaryMinusExpressionContext *ctx) = 0;
 
-  virtual void enterPowerExpression(tlParser::PowerExpressionContext *ctx) = 0;
-  virtual void exitPowerExpression(tlParser::PowerExpressionContext *ctx) = 0;
-
   virtual void enterEqExpression(tlParser::EqExpressionContext *ctx) = 0;
   virtual void exitEqExpression(tlParser::EqExpressionContext *ctx) = 0;
 
-  virtual void enterInExpression(tlParser::InExpressionContext *ctx) = 0;
-  virtual void exitInExpression(tlParser::InExpressionContext *ctx) = 0;
+  virtual void enterAndExpression(tlParser::AndExpressionContext *ctx) = 0;
+  virtual void exitAndExpression(tlParser::AndExpressionContext *ctx) = 0;
+
+  virtual void enterStringExpression(tlParser::StringExpressionContext *ctx) = 0;
+  virtual void exitStringExpression(tlParser::StringExpressionContext *ctx) = 0;
 
   virtual void enterAddExpression(tlParser::AddExpressionContext *ctx) = 0;
   virtual void exitAddExpression(tlParser::AddExpressionContext *ctx) = 0;
@@ -149,8 +128,11 @@ public:
   virtual void enterSubtractExpression(tlParser::SubtractExpressionContext *ctx) = 0;
   virtual void exitSubtractExpression(tlParser::SubtractExpressionContext *ctx) = 0;
 
-  virtual void enterTernaryExpression(tlParser::TernaryExpressionContext *ctx) = 0;
-  virtual void exitTernaryExpression(tlParser::TernaryExpressionContext *ctx) = 0;
+  virtual void enterFunctionCallExpression(tlParser::FunctionCallExpressionContext *ctx) = 0;
+  virtual void exitFunctionCallExpression(tlParser::FunctionCallExpressionContext *ctx) = 0;
+
+  virtual void enterLtEqExpression(tlParser::LtEqExpressionContext *ctx) = 0;
+  virtual void exitLtEqExpression(tlParser::LtEqExpressionContext *ctx) = 0;
 
   virtual void enterInputExpression(tlParser::InputExpressionContext *ctx) = 0;
   virtual void exitInputExpression(tlParser::InputExpressionContext *ctx) = 0;
@@ -158,8 +140,8 @@ public:
   virtual void enterList(tlParser::ListContext *ctx) = 0;
   virtual void exitList(tlParser::ListContext *ctx) = 0;
 
-  virtual void enterIndexes(tlParser::IndexesContext *ctx) = 0;
-  virtual void exitIndexes(tlParser::IndexesContext *ctx) = 0;
+  virtual void enterIndex(tlParser::IndexContext *ctx) = 0;
+  virtual void exitIndex(tlParser::IndexContext *ctx) = 0;
 
 
 };

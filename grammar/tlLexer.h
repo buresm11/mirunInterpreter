@@ -14,13 +14,12 @@ public:
   enum {
     Println = 1, Print = 2, Input = 3, Assert = 4, Size = 5, Def = 6, If = 7, 
     Else = 8, Return = 9, For = 10, While = 11, To = 12, Do = 13, End = 14, 
-    In = 15, Null = 16, Or = 17, And = 18, Equals = 19, NEquals = 20, GTEquals = 21, 
-    LTEquals = 22, Pow = 23, Excl = 24, GT = 25, LT = 26, Add = 27, Subtract = 28, 
-    Multiply = 29, Divide = 30, Modulus = 31, OBrace = 32, CBrace = 33, 
-    OBracket = 34, CBracket = 35, OParen = 36, CParen = 37, SColon = 38, 
-    Assign = 39, Comma = 40, QMark = 41, Colon = 42, TypeIdentifier = 43, 
-    Bool = 44, Number = 45, Identifier = 46, String = 47, Comment = 48, 
-    Space = 49
+    Or = 15, And = 16, Equals = 17, NEquals = 18, GTEquals = 19, LTEquals = 20, 
+    Pow = 21, Excl = 22, GT = 23, LT = 24, Add = 25, Subtract = 26, Multiply = 27, 
+    Divide = 28, Modulus = 29, OBrace = 30, CBrace = 31, OBracket = 32, 
+    CBracket = 33, OParen = 34, CParen = 35, SColon = 36, Assign = 37, Comma = 38, 
+    QMark = 39, Colon = 40, TypeIdentifier = 41, Bool = 42, Number = 43, 
+    Identifier = 44, String = 45, Comment = 46, Space = 47
   };
 
   tlLexer(antlr4::CharStream *input);

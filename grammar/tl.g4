@@ -22,11 +22,11 @@ statement
  ;
 
 assignment
- : Identifier indexes? '=' expression
+ : Identifier index? '=' expression
  ;
 
  variableDef
- : TypeIdentifier Identifier
+ : TypeIdentifier Identifier index?
  ;
 
 functionCall
@@ -76,7 +76,6 @@ exprList
 expression
  : '-' expression                           #unaryMinusExpression
  | '!' expression                           #notExpression
- | expression '^' expression                #powerExpression
  | expression '*' expression                #multiplyExpression
  | expression '/' expression                #divideExpression
  | expression '%' expression                #modulusExpression
@@ -90,16 +89,11 @@ expression
  | expression '!=' expression               #notEqExpression
  | expression '&&' expression               #andExpression
  | expression '||' expression               #orExpression
- | expression '?' expression ':' expression #ternaryExpression
- | expression In expression                 #inExpression
  | Number                                   #numberExpression
  | Bool                                     #boolExpression
- | Null                                     #nullExpression
- | functionCall indexes?                    #functionCallExpression
- | list indexes?                            #listExpression
- | Identifier indexes?                      #identifierExpression
- | String indexes?                          #stringExpression
- | '(' expression ')' indexes?              #expressionExpression
+ | functionCall index?                      #functionCallExpression
+ | Identifier index?                        #identifierExpression
+ | String                                   #stringExpression
  | Input '(' String? ')'                    #inputExpression
  ;
 
@@ -107,8 +101,8 @@ list
  : '[' exprList? ']'
  ;
 
-indexes
- : ('[' expression ']')+
+index
+ : '[' expression ']'
  ;
 
 Println  : 'println';
@@ -125,8 +119,6 @@ While    : 'while';
 To       : 'to';
 Do       : 'do';
 End      : 'end';
-In       : 'in';
-Null     : 'null';
 
 Or       : '||';
 And      : '&&';
