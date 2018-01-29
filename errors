@@ -1,0 +1,12 @@
+new Error(1, 'Unexpexted type')
+new Error(2, "Variable " + name + " is already defined in current scope" ));
+new Error(3, "Index is not a number"));
+new Error(4, "unknown number")
+new Error(5, "int out of range")
+new Error(6, "Cannon create array sized 0")
+new Error(7, "Variable " + name + " not found"));
+new Error(8, "cannon assign to" + name + " bad type"));
+new Error(9, "cannot do [] on non array"));
+new Error(10, "out of bounds"));
+new Error(11, "types do not match"));
+new Error(12, "operation do not supperted"));

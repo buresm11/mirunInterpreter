@@ -1,24 +1,8 @@
-bool a;
-bool b;
+int a;
+int b;
 
-a=true;
-b=true;
+int c;
 
-bool c;
-
-int d;
-d = 5;
-
-c = true;
-
-int x;
-x=5;
-
-if c do
-	int x;
-	x = 10;
-end
-
-int dx;
-dx=x;
+c = a+b;
+c = a-b;
 

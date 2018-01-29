@@ -12,14 +12,13 @@
 class  tlLexer : public antlr4::Lexer {
 public:
   enum {
-    Println = 1, Print = 2, Input = 3, Assert = 4, Size = 5, Def = 6, If = 7, 
-    Else = 8, Return = 9, For = 10, While = 11, To = 12, Do = 13, End = 14, 
-    Or = 15, And = 16, Equals = 17, NEquals = 18, GTEquals = 19, LTEquals = 20, 
-    Pow = 21, Excl = 22, GT = 23, LT = 24, Add = 25, Subtract = 26, Multiply = 27, 
-    Divide = 28, Modulus = 29, OBrace = 30, CBrace = 31, OBracket = 32, 
-    CBracket = 33, OParen = 34, CParen = 35, SColon = 36, Assign = 37, Comma = 38, 
-    QMark = 39, Colon = 40, TypeIdentifier = 41, Bool = 42, Number = 43, 
-    Identifier = 44, String = 45, Comment = 46, Space = 47
+    Def = 1, If = 2, Else = 3, Return = 4, While = 5, To = 6, Do = 7, End = 8, 
+    Or = 9, And = 10, Equals = 11, NEquals = 12, GTEquals = 13, LTEquals = 14, 
+    Pow = 15, Excl = 16, GT = 17, LT = 18, Add = 19, Subtract = 20, Multiply = 21, 
+    Divide = 22, Modulus = 23, OBrace = 24, CBrace = 25, OBracket = 26, 
+    CBracket = 27, OParen = 28, CParen = 29, SColon = 30, Assign = 31, Comma = 32, 
+    QMark = 33, Colon = 34, Type_identifier = 35, Bool = 36, Number = 37, 
+    Identifier = 38, String = 39, Comment = 40, Space = 41
   };
 
   tlLexer(antlr4::CharStream *input);

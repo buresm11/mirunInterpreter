@@ -1,11 +1,11 @@
 grammar tl;
 
 parse
- : topBlock EOF
+ : top_block EOF
  ;
 
-topBlock
- : (statement | functionDecl)*
+top_block
+ : (statement | function_decl)*
  ;
 
 block
@@ -13,63 +13,54 @@ block
  ;
 
 statement
- : variableDef ';'
+ : variable_def ';'
  | assignment ';'
- | functionCall ';'
- | ifStatement
- | forStatement
- | whileStatement
+ | function_call ';'
+ | if_statement
+ | while_statement
  ;
 
 assignment
  : Identifier index? '=' expression
  ;
 
- variableDef
- : TypeIdentifier Identifier index?
+ variable_def
+ : Type_identifier Identifier index?
  ;
 
-functionCall
- : Identifier '(' exprList? ')' #identifierFunctionCall
- | Println '(' expression? ')'  #printlnFunctionCall
- | Print '(' expression ')'     #printFunctionCall
- | Assert '(' expression ')'    #assertFunctionCall
- | Size '(' expression ')'      #sizeFunctionCall
+function_call
+ : Identifier '(' expr_list? ')'
  ;
 
-ifStatement
- : ifStat elseIfStat* elseStat? End
+if_statement
+ : if_stat else_if_stat* else_stat? End
  ;
 
-ifStat
+if_stat
  : If expression Do block
  ;
 
-elseIfStat
+else_if_stat
  : Else If expression Do block
  ;
 
-elseStat
+else_stat
  : Else Do block
  ;
 
-functionDecl
- : Def Identifier '(' idList? ')' block End
+function_decl
+ : Def Type_identifier Identifier '(' id_list_decl? ')' block End
  ;
 
-forStatement
- : For Identifier '=' expression To expression Do block End
- ;
-
-whileStatement
+while_statement
  : While expression Do block End
  ;
 
-idList
- : Identifier (',' Identifier)*
+ id_list_decl
+ : Type_identifier Identifier (',' Type_identifier Identifier)*
  ;
 
-exprList
+expr_list
  : expression (',' expression)*
  ;
 
@@ -91,30 +82,19 @@ expression
  | expression '||' expression               #orExpression
  | Number                                   #numberExpression
  | Bool                                     #boolExpression
- | functionCall index?                      #functionCallExpression
+ | function_call index?                     #functionCallExpression
  | Identifier index?                        #identifierExpression
  | String                                   #stringExpression
- | Input '(' String? ')'                    #inputExpression
- ;
-
-list
- : '[' exprList? ']'
  ;
 
 index
  : '[' expression ']'
  ;
 
-Println  : 'println';
-Print    : 'print';
-Input    : 'input';
-Assert   : 'assert';
-Size     : 'size';
 Def      : 'def';
 If       : 'if';
 Else     : 'else';
 Return   : 'return';
-For      : 'for';
 While    : 'while';
 To       : 'to';
 Do       : 'do';
@@ -147,7 +127,7 @@ Comma    : ',';
 QMark    : '?';
 Colon    : ':';
 
-TypeIdentifier
+Type_identifier
  : 'int'
  | 'string'
  | 'bool'
@@ -159,7 +139,7 @@ Bool
  ;
 
 Number
- : Int ('.' Digit*)?
+ : Int
  ;
 
 Identifier
@@ -170,12 +150,15 @@ String
  : ["] (~["\r\n] | '\\\\' | '\\"')* ["]
  | ['] (~['\r\n] | '\\\\' | '\\\'')* [']
  ;
+
 Comment
  : ('//' ~[\r\n]* | '/*' .*? '*/') -> skip
  ;
+
 Space
  : [ \t\r\n\u000C] -> skip
  ;
+
 fragment Int
  : [1-9] Digit*
  | '0'

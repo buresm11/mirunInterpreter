@@ -8,6 +8,7 @@
 
 #include "Obj.h"
 #include "ArrayObj.h"
+#include "ContextValue.h"
 
 class Environment {
 	std::map<std::string, Obj *> variables;
@@ -23,113 +24,153 @@ public:
 		this->parent = environment;
 	}
 
-	Environment * getParent() {
+	Environment* get_parent() {
 		return parent;
 	}
 
-	bool createVariable(std::string name, Obj * obj) {
-		return this->variables.insert(std::pair<std::string, Obj *>(name, obj)).second;
+	ContextValue* create_variable(std::string name, Obj * obj) {
+
+		if (this->variables.insert(std::pair<std::string, Obj *>(name, obj)).second == false)
+		{
+			return new ContextValue(NULL, new Error(2, "Variable " + name + " is already defined in current scope" ));
+		}
+		else
+		{
+			return new ContextValue(obj, NULL);
+		}
+
 	}
 
-	bool reAssignVariable(std::string name, Obj * obj) {
+	ContextValue* set_variable(std::string name, Obj * obj) {
 
 		std::map<std::string, Obj *>::iterator it;
-
 		it = variables.find(name);
 
-		if ( it == variables.end() ) {
-
-		  if(parent == NULL) return false;
-		  else return parent->reAssignVariable(name, obj);
-
-		} else {
-
-			// the assigment has wrong type
-			if (it->second->getType() != obj->getType()){
-				return false;
+		if(it == variables.end()) 
+		{
+			if(parent == NULL) 
+			{
+				return new ContextValue(NULL, new Error(7, "Variable " + name + " not found"));
+			} 
+			else return parent->set_variable(name, obj);
+		} 
+		else 
+		{
+			if (it->second->get_type() != obj->get_type())
+			{
+				return new ContextValue(NULL, new Error(8, "cannon assign to" + name + " bad type"));
 			}
-			else {
+			else 
+			{
 				delete it->second;
 				it->second = obj;
 
-			    return true;
+			    return new ContextValue(obj, NULL);
 			}			
 		}
 	}
 
-	bool reAssignArrayVariable(std::string name, Obj * obj, int arrayDescriptor){
-
+	ContextValue* set_array_variable(std::string name, Obj * obj, int index)
+	{
 		std::map<std::string, Obj *>::iterator it;
-
 		it = variables.find(name);
 
-		if ( it == variables.end() ) {
-			if(parent == NULL) return NULL;
-			else return parent->reAssignArrayVariable(name, obj, arrayDescriptor);
+		if(it == variables.end()) 
+		{
+			if(parent == NULL)
+			{
+				return new ContextValue(NULL, new Error(7, "Variable " + name + " not found"));
+			}
+			else return parent->set_array_variable(name, obj, index);
 		} 
-		else {
-			if(it->second->getType() == ArrayType){ // is actually array
-				ArrayObj * arrayObj = (ArrayObj*)it->second;
-				Obj ** array = arrayObj->getValue();
+		else 
+		{
+			if(it->second->get_type() == ArrayType)
+			{
+				ArrayObj * array_obj = (ArrayObj*)it->second;
+				Obj ** array = array_obj->get_value();
+				int array_size = array_obj->get_array_size();
 
-				int arraySize = arrayObj->getArraySize();
-
-				if(arrayDescriptor >= 0 && arrayDescriptor < arraySize){ //descriptor makes sense
-
-					if(array[arrayDescriptor]->getType() == obj->getType()){ //types match
-
-						delete array[arrayDescriptor];
-						array[arrayDescriptor] = obj;
-						return true;
+				if(index >= 0 && index < array_size)
+				{ 
+					if(array[index]->get_type() == obj->get_type())
+					{
+						delete array[index];
+						array[index] = obj;
+						return new ContextValue(obj, NULL);
 					}
-					else return false;
+					else
+					{
+						return new ContextValue(NULL, new Error(8, "cannon assign to" + name + " bad type"));
+					}
 				}
-				else return false;
+				else
+				{
+					return new ContextValue(NULL, new Error(10, "out of bounds"));
+				}
 			}
-			else return false;
+			else
+			{
+				return new ContextValue(NULL, new Error(9, "cannot do [] on non array"));
+			}
 		}
 	}
 
-	Obj* lookUpVariable(std::string name) {
+	
+	ContextValue* look_up_variable(std::string name) {
 
 		std::map<std::string, Obj *>::iterator it;
-
 		it = variables.find(name);
 
-		if ( it == variables.end() ) {
-
-		  if(parent == NULL) return NULL;
-		  else return parent->lookUpVariable(name);
-
-		} else {
-		  return it->second;
+		if(it == variables.end())
+		{
+			if(parent == NULL) 
+		  	{
+		  		return new ContextValue(NULL, new Error(7, "Variable " + name + " not found"));
+		  	}
+			else return parent->look_up_variable(name);
+		}
+		else 
+		{
+			return new ContextValue(it->second->copy(), NULL);
 		}
 	}
 
-	Obj* lookUpArrayVariable(std::string name, int arrayDescriptor) {
+	
+	ContextValue* look_up_array_variable(std::string name, int index) {
 
 		std::map<std::string, Obj *>::iterator it;
-
 		it = variables.find(name);
 
-		if ( it == variables.end() ) {
-			if(parent == NULL) return NULL;
-			else return parent->lookUpArrayVariable(name, arrayDescriptor);
+		if ( it == variables.end() ) 
+		{
+			if(parent == NULL) 
+			{
+				return new ContextValue(NULL, new Error(7, "Variable " + name + " not found"));
+			}
+			else return parent->look_up_array_variable(name, index);
 		} 
-		else {
-			if(it->second->getType() == ArrayType){ // is actually array
-				ArrayObj * arrayObj = (ArrayObj*)it->second;
-				Obj ** array = arrayObj->getValue();
+		else 
+		{
+			if(it->second->get_type() == ArrayType)
+			{
+				ArrayObj * array_obj = (ArrayObj*)it->second;
+				Obj ** array = array_obj->get_value();
+				int array_size = array_obj->get_array_size();
 
-				int arraySize = arrayObj->getArraySize();
-
-				if(arrayDescriptor >= 0 && arrayDescriptor < arraySize){ //descriptor makes sense
-
-					return array[arrayDescriptor];
+				if(index >= 0 && index < array_size)
+				{
+					return new ContextValue(array[index], NULL);
 				}
-				else return NULL;
+				else 
+				{
+					return new ContextValue(NULL, new Error(10, "out of bounds"));
+				}
 			}
-			else return NULL;
+			else 
+			{
+				return new ContextValue(NULL, new Error(9, "cannot do [] on non array"));
+			}
 		}
-	}
+	} 
 };

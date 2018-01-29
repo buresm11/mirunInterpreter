@@ -6,20 +6,20 @@
 class ArrayObj : public Obj {
 
 	Obj ** value;
-	int arraySize;
+	int array_size;
 
 public:
-	ArrayObj(int arraySize, Obj ** value) : Obj(ArrayType), value(value), arraySize(arraySize) { }
+	ArrayObj(int array_size, Obj ** value) : Obj(ArrayType), value(value), array_size(array_size) { }
 
-	Obj ** getValue(){
+	Obj ** get_value(){
 		return value;
 	}
 
-	void setValue(Obj ** value){
+	void set_value(Obj ** value){
 		this->value = value;
 	}
 
-	int getArraySize() {
-		return arraySize;
+	int get_array_size() {
+		return array_size;
 	}
 };

@@ -15,42 +15,42 @@ class Runtime {
 	Environment * environment;
 	Obj *** heap;
 
-	int allocatedRecords;
+	int allocated_records;
 
 public:
 
 	Runtime() {
 		this->environment = new Environment();
-		this->heap = new Obj**[HEAP_SIZE];  // TODO: not harcoded
-		this->allocatedRecords = 0;
+		this->heap = new Obj**[HEAP_SIZE];
+		this->allocated_records = 0;
 	}
 
 	~Runtime(){
 		delete environment;
 	}
 
-	Environment * getCurrentEnvironment(){
+	Environment * current_environment(){
 		return environment;
 	}
 
-	void createNewEnvironment(){
-		Environment * newEnvironment = new Environment(this->environment);
-		this->environment = newEnvironment;
+	void create_new_environment(){
+		Environment * new_environment = new Environment(this->environment);
+		this->environment = new_environment;
 	}	
 
 	void removeTopEnvironment() { // TODO delete the old environment
-		if(environment->getParent() != NULL) {
-			this->environment = environment->getParent();
+		if(environment->get_parent() != NULL) {
+			this->environment = environment->get_parent();
 		}
 	}
 
-	void allocateOnHeap(Obj ** obj) {
-		int slot = findEmptySlot();
+	void allocate_on_heap(Obj ** obj) {
+		int slot = find_empty_slot();
 
 		heap[slot] = obj;
 	}
 
-	int findEmptySlot(){
+	int find_empty_slot(){
 		for(int i=0;i<HEAP_SIZE;i++){
 			if(heap[i] == NULL){
 				return i;

@@ -13,11 +13,11 @@ public:
 	StringObj() : Obj(StringType), value("") { }
 	StringObj(std::string s) : Obj(StringType), value(s) { }
 
-	std::string getValue(){
+	std::string get_value(){
 		return value;
 	}
 
-	void setValue(std::string value){
+	void set_value(std::string value){
 		this->value = value;
 	}
 

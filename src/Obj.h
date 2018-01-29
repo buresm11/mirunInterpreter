@@ -10,11 +10,13 @@ private:
 public:
 	Obj(Type t) : type(t) { }
 
-	Type getType(){
+	Type get_type()
+	{
 		return type;
 	}
 
-	virtual Obj * copy() {
+	virtual Obj * copy() 
+	{
 		return new Obj(type);
 	}
 };

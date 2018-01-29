@@ -19,7 +19,7 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitTopBlock(tlParser::TopBlockContext *ctx) override {
+  virtual antlrcpp::Any visitTop_block(tlParser::Top_blockContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -35,63 +35,43 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitVariableDef(tlParser::VariableDefContext *ctx) override {
+  virtual antlrcpp::Any visitVariable_def(tlParser::Variable_defContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitIdentifierFunctionCall(tlParser::IdentifierFunctionCallContext *ctx) override {
+  virtual antlrcpp::Any visitFunction_call(tlParser::Function_callContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitPrintlnFunctionCall(tlParser::PrintlnFunctionCallContext *ctx) override {
+  virtual antlrcpp::Any visitIf_statement(tlParser::If_statementContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitPrintFunctionCall(tlParser::PrintFunctionCallContext *ctx) override {
+  virtual antlrcpp::Any visitIf_stat(tlParser::If_statContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitAssertFunctionCall(tlParser::AssertFunctionCallContext *ctx) override {
+  virtual antlrcpp::Any visitElse_if_stat(tlParser::Else_if_statContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitSizeFunctionCall(tlParser::SizeFunctionCallContext *ctx) override {
+  virtual antlrcpp::Any visitElse_stat(tlParser::Else_statContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitIfStatement(tlParser::IfStatementContext *ctx) override {
+  virtual antlrcpp::Any visitFunction_decl(tlParser::Function_declContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitIfStat(tlParser::IfStatContext *ctx) override {
+  virtual antlrcpp::Any visitWhile_statement(tlParser::While_statementContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitElseIfStat(tlParser::ElseIfStatContext *ctx) override {
+  virtual antlrcpp::Any visitId_list_decl(tlParser::Id_list_declContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitElseStat(tlParser::ElseStatContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitFunctionDecl(tlParser::FunctionDeclContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitForStatement(tlParser::ForStatementContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitWhileStatement(tlParser::WhileStatementContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitIdList(tlParser::IdListContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitExprList(tlParser::ExprListContext *ctx) override {
+  virtual antlrcpp::Any visitExpr_list(tlParser::Expr_listContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -172,14 +152,6 @@ public:
   }
 
   virtual antlrcpp::Any visitLtEqExpression(tlParser::LtEqExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitInputExpression(tlParser::InputExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitList(tlParser::ListContext *ctx) override {
     return visitChildren(ctx);
   }
 

@@ -11,16 +11,16 @@ public:
 	BoolObj() : Obj(BoolType), value(false) { }
 	BoolObj(bool b) : Obj(BoolType), value(b) { }
 
-	bool getValue(){
+	bool get_value(){
 		return value;
 	}
 
-	void setValue(bool value){
+	void set_value(bool value){
 		this->value = value;
 	}
 
-	 Obj * copy() {
+	Obj * copy() 
+	{
 		return new BoolObj(value);
-		
 	}
 };

@@ -10,11 +10,11 @@ public:
 	IntObj() : Obj(IntType), value(0) { }
 	IntObj(int i) : Obj(IntType), value(i) {}
 
-	int getValue(){
+	int get_value(){
 		return value;
 	}
 
-	void setValue(int value){
+	void set_value(int value){
 		this->value = value;
 	}
 
