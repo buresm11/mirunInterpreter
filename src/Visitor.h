@@ -35,13 +35,15 @@ public:
             std::cout << context_value->get_error()->get_text() << std::endl;
         }
 
+        runtime->current_environment()->show_variable();
+
         ContextValue * return_value = new ContextValue();
         return return_value;
     }
 
     antlrcpp::Any visitTop_block(tlParser::Top_blockContext *context)
     {
-        std::cout << "TopBlock" << std::endl;
+        std::cout << "Top_block" << std::endl;
 
         for(int i=0; i < context->function_decl().size(); i++)
         {
@@ -52,6 +54,7 @@ public:
         {
             ContextValue * context_value = visit(context->statement().at(i));
             if(context_value->has_error()) return context_value;
+            else delete context_value;
         }
 
         ContextValue * return_value = new ContextValue();
@@ -60,11 +63,23 @@ public:
 
     antlrcpp::Any visitBlock(tlParser::BlockContext *context)
     {
+        std::cout << "block" << std::endl;
 
+        for (int i=0; i < context->statement().size(); i++)
+        {
+            ContextValue * context_value = visit(context->statement().at(i));
+            if(context_value->has_error()) return context_value;
+            else delete context_value;
+        }
+
+        ContextValue * return_value = new ContextValue();
+        return return_value;
     }
 
     antlrcpp::Any visitStatement(tlParser::StatementContext *context)
     {
+        std::cout << "statement" << std::endl;
+
         ContextValue * context_value_statement = NULL;
 
         if(context->variable_def() != NULL) 
@@ -217,22 +232,111 @@ public:
 
     antlrcpp::Any visitIf_statement(tlParser::If_statementContext *context)
     {
+        std::cout << "If_statement" << std::endl;
 
+        bool if_executed = false;
+
+        ContextValue * context_value_if = visit(context->if_stat());
+        if(context_value_if->has_error())
+        {
+            return context_value_if;
+        }
+
+        if(!((BoolObj*)context_value_if->get_obj())->get_value())
+        {
+            for(int i=0;i < context->else_if_stat().size(); i++)
+            {
+               ContextValue * context_value_else_if = visit(context->else_if_stat().at(i)); 
+
+               if(context_value_else_if->has_error())
+               {
+                    return context_value_else_if;
+               }
+               if(((BoolObj*)context_value_else_if->get_obj())->get_value())
+               {
+                    delete context_value_else_if;
+                    if_executed = true;
+                    break; 
+               }
+               else delete context_value_else_if;
+            }
+        }
+        else
+        {
+            if_executed = true;
+        }
+        delete context_value_if;
+
+        if(!if_executed)
+        {
+            ContextValue * context_value_else = visit(context->else_stat());
+            if(context_value_else->has_error())
+            {
+                return context_value_if;
+            }
+            delete context_value_else;
+        }
+
+        return new ContextValue();
     }
 
     antlrcpp::Any visitIf_stat(tlParser::If_statContext *context)
     {
+        std::cout << "If_stat" << std::endl;
 
+        ContextValue * context_value_expression = visit(context->expression());
+
+        if(context_value_expression->has_error())
+        {
+            return context_value_expression;
+        }
+
+        if(((BoolObj*)context_value_expression->get_obj())->get_value())
+        {
+            runtime->create_new_environment();
+            ContextValue * contex_value_if_block = visit(context->block());
+            if(contex_value_if_block->has_error()) return contex_value_if_block;
+            runtime->current_environment()->show_variable();
+            runtime->remove_top_environment();
+        }
+
+        return context_value_expression;
     }
 
     antlrcpp::Any visitElse_if_stat(tlParser::Else_if_statContext *context)
     {
+        std::cout << "Else_if_stat" << std::endl;
 
+        ContextValue * context_value_expression = visit(context->expression());
+
+        if(context_value_expression->has_error())
+        {
+            return context_value_expression;
+        }
+
+        if(((BoolObj*)context_value_expression->get_obj())->get_value())
+        {
+            runtime->create_new_environment();
+            ContextValue * contex_value_else_if_block = visit(context->block());
+            if(contex_value_else_if_block->has_error()) return contex_value_else_if_block;
+            runtime->current_environment()->show_variable();
+            runtime->remove_top_environment();
+        }
+
+        return context_value_expression;
     }
 
     antlrcpp::Any visitElse_stat(tlParser::Else_statContext *context)
     {
+        std::cout << "Else_stat" << std::endl;
 
+        runtime->create_new_environment();
+        ContextValue * contex_value_else_block = visit(context->block());
+        if(contex_value_else_block->has_error()) return contex_value_else_block;
+        runtime->current_environment()->show_variable();
+        runtime->remove_top_environment();
+
+        return new ContextValue();
     }
 
     antlrcpp::Any visitFunction_decl(tlParser::Function_declContext *context)
@@ -242,7 +346,28 @@ public:
 
     antlrcpp::Any visitWhile_statement(tlParser::While_statementContext *context)
     {
+        std::cout << "while" << std::endl;
 
+        while(true)
+        {
+            ContextValue * context_value_expression = visit(context->expression());
+
+            if(context_value_expression->has_error())
+            {
+                return context_value_expression;
+            }
+
+            if(!((BoolObj*)context_value_expression->get_obj())->get_value()) break;
+            else
+            {
+                runtime->create_new_environment();
+                ContextValue * contex_value_else_block = visit(context->block());
+                if(contex_value_else_block->has_error()) return contex_value_else_block;
+                runtime->current_environment()->show_variable();
+                runtime->remove_top_environment();
+            }
+        }
+        return new ContextValue();
     }
 
     antlrcpp::Any visitId_list_decl(tlParser::Id_list_declContext *context)
@@ -276,60 +401,7 @@ public:
                 delete context_value_expression;
                 return new ContextValue(NULL ,new Error(3, "Index is not a number"));
             }
-
         }
-    }
-
-    antlrcpp::Any visitLtExpression(tlParser::LtExpressionContext *context)
-    {
-
-    }
-
-    antlrcpp::Any visitGtExpression(tlParser::GtExpressionContext *context)
-    {
-
-    }
-
-    antlrcpp::Any visitBoolExpression(tlParser::BoolExpressionContext *context)
-    {
-
-        std::cout << "bool" << std::endl;
-
-        bool value;
-        if(context->Bool()->getText().compare("true") == 0) 
-        {
-            value = true;
-        }
-        else value = false;
-
-        Obj * obj = new BoolObj(value);
-        return new ContextValue(obj, NULL);
-    }
-
-    antlrcpp::Any visitNotEqExpression(tlParser::NotEqExpressionContext *context)
-    {
-
-    }
-
-    antlrcpp::Any visitNumberExpression(tlParser::NumberExpressionContext *context)
-    {
-        int number;
-
-        try
-        {
-            number = std::stoi(context->Number()->getText());
-        }
-        catch(std::invalid_argument & e)
-        { 
-            return new ContextValue(NULL, new Error(4, "unknown number"));
-        }
-        catch(std::out_of_range & e)
-        {
-            return new ContextValue(NULL, new Error(5, "int out of range"));
-        }
-
-        Obj * obj = new IntObj(number);
-        return new ContextValue(obj, NULL);
     }
 
     antlrcpp::Any visitIdentifierExpression(tlParser::IdentifierExpressionContext *context)
@@ -355,39 +427,319 @@ public:
         }
     }
 
-    antlrcpp::Any visitModulusExpression(tlParser::ModulusExpressionContext *context)
+    antlrcpp::Any visitFunctionCallExpression(tlParser::FunctionCallExpressionContext *context)
     {
 
+    }
+
+    antlrcpp::Any visitLtExpression(tlParser::LtExpressionContext *context)
+    {
+        std::cout << "LtExpression" << std::endl;
+
+        ContextValue* contex_value_l = visit(context->expression().at(0));
+        if(contex_value_l->has_error()) return contex_value_l;
+
+        ContextValue* contex_value_r = visit(context->expression().at(1));
+        if(contex_value_l->has_error()) return contex_value_r;
+
+        if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
+        {
+
+            Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() < ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
+        else 
+        {
+            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
+            {
+                return new ContextValue(NULL, new Error(11, "types do not match"));
+            } 
+            else
+            {
+                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
+            }
+        }
+    }
+
+    antlrcpp::Any visitGtExpression(tlParser::GtExpressionContext *context)
+    {
+        std::cout << "LtEqExpression" << std::endl;
+
+        ContextValue* contex_value_l = visit(context->expression().at(0));
+        if(contex_value_l->has_error()) return contex_value_l;
+
+        ContextValue* contex_value_r = visit(context->expression().at(1));
+        if(contex_value_l->has_error()) return contex_value_r;
+
+        if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
+        {
+
+            Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() > ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
+        else 
+        {
+            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
+            {
+                return new ContextValue(NULL, new Error(11, "types do not match"));
+            } 
+            else
+            {
+                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
+            }
+        }
+    }
+
+    antlrcpp::Any visitBoolExpression(tlParser::BoolExpressionContext *context)
+    {
+        std::cout << "bool" << std::endl;
+
+        bool value;
+        if(context->Bool()->getText().compare("true") == 0) 
+        {
+            value = true;
+        }
+        else value = false;
+
+        Obj * obj = new BoolObj(value);
+        return new ContextValue(obj, NULL);
+    }
+
+    antlrcpp::Any visitNotEqExpression(tlParser::NotEqExpressionContext *context)
+    {
+        std::cout << "EqExpression" << std::endl;
+
+        ContextValue* contex_value_l = visit(context->expression().at(0));
+        if(contex_value_l->has_error()) return contex_value_l;
+
+        ContextValue* contex_value_r = visit(context->expression().at(1));
+        if(contex_value_l->has_error()) return contex_value_r;
+
+        if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
+        {
+            Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() != ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
+        if(contex_value_l->get_obj()->get_type() == StringType && contex_value_r->get_obj()->get_type() == StringType)
+        {
+            Obj * return_obj = new BoolObj(((StringObj*)(contex_value_l->get_obj()))->get_value() != ((StringObj*)(contex_value_r->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
+        if(contex_value_l->get_obj()->get_type() == BoolType && contex_value_r->get_obj()->get_type() == BoolType)
+        {
+            Obj * return_obj = new BoolObj(((BoolObj*)(contex_value_l->get_obj()))->get_value() != ((BoolObj*)(contex_value_r->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
+        else 
+        {
+            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
+            {
+                return new ContextValue(NULL, new Error(11, "types do not match"));
+            } 
+            else
+            {
+                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
+            }
+        }
+    }
+
+    antlrcpp::Any visitNumberExpression(tlParser::NumberExpressionContext *context)
+    {
+        int number;
+
+        try
+        {
+            number = std::stoi(context->Number()->getText());
+        }
+        catch(std::invalid_argument & e)
+        { 
+            return new ContextValue(NULL, new Error(4, "unknown number"));
+        }
+        catch(std::out_of_range & e)
+        {
+            return new ContextValue(NULL, new Error(5, "int out of range"));
+        }
+
+        Obj * obj = new IntObj(number);
+        return new ContextValue(obj, NULL);
+    }
+
+    antlrcpp::Any visitModulusExpression(tlParser::ModulusExpressionContext *context)
+    {
+        std::cout << "ModulusExpression" << std::endl;
+
+        ContextValue* contex_value_l = visit(context->expression().at(0));
+        if(contex_value_l->has_error()) return contex_value_l;
+
+        ContextValue* contex_value_r = visit(context->expression().at(1));
+        if(contex_value_l->has_error()) return contex_value_r;
+
+        if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
+        {
+
+            Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() % ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
+        else 
+        {
+            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
+            {
+                return new ContextValue(NULL, new Error(11, "types do not match"));
+            } 
+            else
+            {
+                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
+            }
+        }
     }
 
     antlrcpp::Any visitNotExpression(tlParser::NotExpressionContext *context)
     {
+        std::cout << "NotExpression" << std::endl;
 
+        ContextValue* contex_value = visit(context->expression());
+        if(contex_value->has_error()) return contex_value;
+
+        if(contex_value->get_obj()->get_type() == BoolType)
+        {
+            Obj * return_obj = new BoolObj(!((BoolObj*)(contex_value->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
+        else 
+        {
+            return new ContextValue(NULL, new Error(12, "operation do not supperted"));
+        }
     }
 
     antlrcpp::Any visitMultiplyExpression(tlParser::MultiplyExpressionContext *context)
     {
+        std::cout << "MultiplyExpression" << std::endl;
 
+        ContextValue* contex_value_l = visit(context->expression().at(0));
+        if(contex_value_l->has_error()) return contex_value_l;
+
+        ContextValue* contex_value_r = visit(context->expression().at(1));
+        if(contex_value_l->has_error()) return contex_value_r;
+
+        if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
+        {
+            Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() * ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
+        else 
+        {
+            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
+            {
+                return new ContextValue(NULL, new Error(11, "types do not match"));
+            } 
+            else
+            {
+                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
+            }
+        }
     }
 
     antlrcpp::Any visitGtEqExpression(tlParser::GtEqExpressionContext *context)
     {
+        std::cout << "GtEqExpression" << std::endl;
 
+        ContextValue* contex_value_l = visit(context->expression().at(0));
+        if(contex_value_l->has_error()) return contex_value_l;
+
+        ContextValue* contex_value_r = visit(context->expression().at(1));
+        if(contex_value_l->has_error()) return contex_value_r;
+
+        if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
+        {
+            Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() >= ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
+        else 
+        {
+            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
+            {
+                return new ContextValue(NULL, new Error(11, "types do not match"));
+            } 
+            else
+            {
+                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
+            }
+        }
     }
 
     antlrcpp::Any visitDivideExpression(tlParser::DivideExpressionContext *context)
     {
+        std::cout << "DivideExpression" << std::endl;
 
+        ContextValue* contex_value_l = visit(context->expression().at(0));
+        if(contex_value_l->has_error()) return contex_value_l;
+
+        ContextValue* contex_value_r = visit(context->expression().at(1));
+        if(contex_value_l->has_error()) return contex_value_r;
+
+        if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
+        {
+
+            Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() / ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
+        else 
+        {
+            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
+            {
+                return new ContextValue(NULL, new Error(11, "types do not match"));
+            } 
+            else
+            {
+                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
+            }
+        }
     }
 
     antlrcpp::Any visitOrExpression(tlParser::OrExpressionContext *context)
     {
+        std::cout << "OrExpression" << std::endl;
 
+        ContextValue* contex_value_l = visit(context->expression().at(0));
+        if(contex_value_l->has_error()) return contex_value_l;
+
+        ContextValue* contex_value_r = visit(context->expression().at(1));
+        if(contex_value_l->has_error()) return contex_value_r;
+
+        if(contex_value_l->get_obj()->get_type() == BoolType && contex_value_r->get_obj()->get_type() == BoolType)
+        {
+            Obj * return_obj = new BoolObj(((BoolObj*)(contex_value_l->get_obj()))->get_value() || ((BoolObj*)(contex_value_r->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
+        else 
+        {
+            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
+            {
+                return new ContextValue(NULL, new Error(11, "types do not match"));
+            } 
+            else
+            {
+                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
+            }
+        }
     }
 
     antlrcpp::Any visitUnaryMinusExpression(tlParser::UnaryMinusExpressionContext *context)
     {
+        std::cout << "UnaryMinusExpression" << std::endl;
 
+        ContextValue* contex_value = visit(context->expression());
+        if(contex_value->has_error()) return contex_value;
+
+        if(contex_value->get_obj()->get_type() == IntType)
+        {
+            Obj * return_obj = new IntObj(-((IntObj*)(contex_value->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
+        else 
+        {
+            return new ContextValue(NULL, new Error(12, "operation do not supperted"));
+        }
     }
 
     antlrcpp::Any visitEqExpression(tlParser::EqExpressionContext *context)
@@ -402,20 +754,19 @@ public:
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
-
-            Obj * return_obj = new BoolObj(((IntObj*)contex_value_l)->get_value() == ((IntObj*)contex_value_r)->get_value());
+            Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() == ((IntObj*)(contex_value_r->get_obj()))->get_value());
             return new ContextValue(return_obj, NULL);
         }
         if(contex_value_l->get_obj()->get_type() == StringType && contex_value_r->get_obj()->get_type() == StringType)
         {
 
-            Obj * return_obj = new BoolObj(((StringObj*)contex_value_l)->get_value() == ((StringObj*)contex_value_r)->get_value());
+            Obj * return_obj = new BoolObj(((StringObj*)(contex_value_l->get_obj()))->get_value() == ((StringObj*)(contex_value_r->get_obj()))->get_value());
             return new ContextValue(return_obj, NULL);
         }
         if(contex_value_l->get_obj()->get_type() == BoolType && contex_value_r->get_obj()->get_type() == BoolType)
         {
 
-            Obj * return_obj = new BoolObj(((BoolObj*)contex_value_l)->get_value() == ((BoolObj*)contex_value_r)->get_value());
+            Obj * return_obj = new BoolObj(((BoolObj*)(contex_value_l->get_obj()))->get_value() == ((BoolObj*)(contex_value_r->get_obj()))->get_value());
             return new ContextValue(return_obj, NULL);
         }
         else 
@@ -433,7 +784,7 @@ public:
 
     antlrcpp::Any visitAndExpression(tlParser::AndExpressionContext *context)
     {
-        std::cout << "AddExpression" << std::endl;
+        std::cout << "AndExpression" << std::endl;
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -443,8 +794,7 @@ public:
 
         if(contex_value_l->get_obj()->get_type() == BoolType && contex_value_r->get_obj()->get_type() == BoolType)
         {
-
-            Obj * return_obj = new BoolType(((IntObj*)contex_value_l)->get_value() && ((IntObj*)contex_value_r)->get_value());
+            Obj * return_obj = new BoolObj(((BoolObj*)(contex_value_l->get_obj()))->get_value() && ((BoolObj*)(contex_value_r->get_obj()))->get_value());
             return new ContextValue(return_obj, NULL);
         }
         else 
@@ -478,8 +828,7 @@ public:
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
-
-            Obj * return_obj = new IntObj(((IntObj*)contex_value_l)->get_value() + ((IntObj*)contex_value_r)->get_value());
+            Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() + ((IntObj*)(contex_value_r->get_obj()))->get_value());
             return new ContextValue(return_obj, NULL);
         }
         else 
@@ -507,8 +856,7 @@ public:
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
-
-            Obj * return_obj = new IntObj(((IntObj*)contex_value_l)->get_value() - ((IntObj*)contex_value_r)->get_value());
+            Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() - ((IntObj*)(contex_value_r->get_obj()))->get_value());
             return new ContextValue(return_obj, NULL);
         }
         else 
@@ -524,11 +872,6 @@ public:
         }
     }
 
-    antlrcpp::Any visitFunctionCallExpression(tlParser::FunctionCallExpressionContext *context)
-    {
-
-    }
-
     antlrcpp::Any visitLtEqExpression(tlParser::LtEqExpressionContext *context)
     {
         std::cout << "LtEqExpression" << std::endl;
@@ -541,8 +884,7 @@ public:
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
-
-            Obj * return_obj = new BoolObj(((IntObj*)contex_value_l)->get_value() <= ((IntObj*)contex_value_r)->get_value());
+            Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() <= ((IntObj*)(contex_value_r->get_obj()))->get_value());
             return new ContextValue(return_obj, NULL);
         }
         else 

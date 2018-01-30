@@ -7,7 +7,7 @@ class IntObj : public Obj {
 	int value;
 
 public:
-	IntObj() : Obj(IntType), value(0) { }
+	IntObj() : Obj(IntType), value(9) { }
 	IntObj(int i) : Obj(IntType), value(i) {}
 
 	int get_value(){

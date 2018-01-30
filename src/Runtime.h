@@ -38,9 +38,11 @@ public:
 		this->environment = new_environment;
 	}	
 
-	void removeTopEnvironment() { // TODO delete the old environment
+	void remove_top_environment() { 
 		if(environment->get_parent() != NULL) {
+			Environment * tmp = this->environment;
 			this->environment = environment->get_parent();
+			delete tmp;
 		}
 	}
 

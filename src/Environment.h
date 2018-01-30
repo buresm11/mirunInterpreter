@@ -7,6 +7,9 @@
 #include <map>
 
 #include "Obj.h"
+#include "IntObj.h"
+#include "StringObj.h"
+#include "BoolObj.h"
 #include "ArrayObj.h"
 #include "ContextValue.h"
 
@@ -26,6 +29,30 @@ public:
 
 	Environment* get_parent() {
 		return parent;
+	}
+
+	void show_variable()
+	{
+		for (std::map<std::string, Obj *>::iterator it = variables.begin(); it != variables.end(); ++it)
+		{
+			if(it->second->get_type() == IntType)
+			{
+				std::cout << it->first << " : " << ((IntObj*)it->second)->get_value() << std::endl;
+			}
+			else if (it->second->get_type() == StringType)
+			{
+				std::cout << it->first << " : " << ((StringObj*)it->second)->get_value() << std::endl;
+			}
+			else if (it->second->get_type() == BoolType)
+			{
+				std::cout << it->first << " : " << ((BoolObj*)it->second)->get_value() << std::endl;
+			}
+		}
+		std::cout << "--------------------------" << variables.size() << std::endl;
+		if(parent != NULL) 
+		{
+			parent->show_variable();
+		}
 	}
 
 	ContextValue* create_variable(std::string name, Obj * obj) {
