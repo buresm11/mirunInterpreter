@@ -32,8 +32,14 @@ public:
   virtual void enterVariable_def(tlParser::Variable_defContext *ctx) = 0;
   virtual void exitVariable_def(tlParser::Variable_defContext *ctx) = 0;
 
-  virtual void enterFunction_call(tlParser::Function_callContext *ctx) = 0;
-  virtual void exitFunction_call(tlParser::Function_callContext *ctx) = 0;
+  virtual void enterIdentifierFunctionCall(tlParser::IdentifierFunctionCallContext *ctx) = 0;
+  virtual void exitIdentifierFunctionCall(tlParser::IdentifierFunctionCallContext *ctx) = 0;
+
+  virtual void enterPrintFunctionCall(tlParser::PrintFunctionCallContext *ctx) = 0;
+  virtual void exitPrintFunctionCall(tlParser::PrintFunctionCallContext *ctx) = 0;
+
+  virtual void enterScanFunctionCall(tlParser::ScanFunctionCallContext *ctx) = 0;
+  virtual void exitScanFunctionCall(tlParser::ScanFunctionCallContext *ctx) = 0;
 
   virtual void enterIf_statement(tlParser::If_statementContext *ctx) = 0;
   virtual void exitIf_statement(tlParser::If_statementContext *ctx) = 0;
@@ -53,11 +59,11 @@ public:
   virtual void enterWhile_statement(tlParser::While_statementContext *ctx) = 0;
   virtual void exitWhile_statement(tlParser::While_statementContext *ctx) = 0;
 
-  virtual void enterId_list_decl(tlParser::Id_list_declContext *ctx) = 0;
-  virtual void exitId_list_decl(tlParser::Id_list_declContext *ctx) = 0;
+  virtual void enterFunc_arg_list_decl(tlParser::Func_arg_list_declContext *ctx) = 0;
+  virtual void exitFunc_arg_list_decl(tlParser::Func_arg_list_declContext *ctx) = 0;
 
-  virtual void enterExpr_list(tlParser::Expr_listContext *ctx) = 0;
-  virtual void exitExpr_list(tlParser::Expr_listContext *ctx) = 0;
+  virtual void enterFunc_arg(tlParser::Func_argContext *ctx) = 0;
+  virtual void exitFunc_arg(tlParser::Func_argContext *ctx) = 0;
 
   virtual void enterLtExpression(tlParser::LtExpressionContext *ctx) = 0;
   virtual void exitLtExpression(tlParser::LtExpressionContext *ctx) = 0;

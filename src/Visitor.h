@@ -7,12 +7,13 @@
 #include "tlVisitor.h"
 #include "tlParser.h"
 #include "Runtime.h"
-
 #include "IntObj.h"
 #include "StringObj.h"
 #include "BoolObj.h"
 #include "ArrayObj.h"
 #include "ContextValue.h"
+
+class Runtime;
 
 class Visitor : public tlVisitor 
 {
@@ -47,7 +48,9 @@ public:
 
         for(int i=0; i < context->function_decl().size(); i++)
         {
-
+            ContextValue * context_value = visit(context->function_decl().at(i));
+            if(context_value->has_error()) return context_value;
+            else delete context_value;
         }
 
         for (int i=0; i < context->statement().size(); i++)
@@ -190,6 +193,9 @@ public:
             return new ContextValue(NULL, new Error(6, "Cannon create array sized 0"));
         }
 
+        std::cout << index;
+
+
         Obj ** var = new Obj*[index];
 
         if(type.compare("string") == 0)
@@ -225,9 +231,67 @@ public:
         return runtime->current_environment()->create_variable(name, array_var);
     }
 
-    antlrcpp::Any visitFunction_call(tlParser::Function_callContext *context)
+    antlrcpp::Any visitPrintFunctionCall(tlParser::PrintFunctionCallContext *context)
     {
+        std::cout << "Print" << std::endl;
 
+        ContextValue * context_value_expression = visit(context->expression());
+
+        if(context_value_expression->has_error())
+        {
+            return context_value_expression;
+        }
+
+        return runtime->print(context_value_expression->get_obj());
+    }
+
+    antlrcpp::Any visitScanFunctionCall(tlParser::ScanFunctionCallContext *context)
+    {
+        if(context->index() != NULL)
+        {
+            ContextValue * context_value_index = visit(context->index());
+            if(context_value_index->has_error()) 
+            {
+                return context_value_index;
+            }
+            else
+            {
+                return runtime->scan(context->Identifier()->getText(), ((IntObj *)context_value_index->get_obj())->get_value());
+            }
+        }
+
+        return runtime->scan(context->Identifier()->getText());
+    }
+
+    antlrcpp::Any visitIdentifierFunctionCall(tlParser::IdentifierFunctionCallContext *context)
+    {
+        std::cout << "func_Call" << std::endl;
+
+        std::string name = context->Identifier()->getText();
+        int params_size = context->expression().size();
+
+        ContextValue ** params = new ContextValue*[params_size];
+
+        for(int i=0;i< params_size; i++)
+        {
+            ContextValue * context_value_expression = visit(context->expression().at(i));
+            if(context_value_expression->has_error()) 
+            {
+                for(int i=0;i< params_size; i++)
+                {
+                    delete params[i];
+                }
+                delete params;
+
+                return context_value_expression;
+            }
+            else
+            {
+                params[i] = context_value_expression;
+            }
+        }
+
+        return runtime->invoke_function(this, name, params, params_size);
     }
 
     antlrcpp::Any visitIf_statement(tlParser::If_statementContext *context)
@@ -341,7 +405,61 @@ public:
 
     antlrcpp::Any visitFunction_decl(tlParser::Function_declContext *context)
     {
+        std::cout << "Function_decl" << std::endl;
 
+        std::string name = context->Identifier()->getText();
+        std::string type_string = context->Type_identifier()->getText();
+
+        Type return_type;
+
+        if(type_string.compare("string") == 0)
+        {
+            return_type = StringType;
+        }
+        else if(type_string.compare("int") == 0)
+        {
+            return_type = IntType;
+        }
+        else if(type_string.compare("bool") == 0)
+        {
+            return_type = BoolType;
+        }
+        else
+        {
+            //raises error
+        }
+
+        ContextValue * context_value = visit(context->func_arg_list_decl());
+
+        return new ContextValue();
+    }
+
+    /*
+        antlr4::tree::TerminalNode *Def();
+        antlr4::tree::TerminalNode *Type_identifier();
+        antlr4::tree::TerminalNode *Identifier();
+        BlockContext *block();
+        antlr4::tree::TerminalNode *End();
+        Func_arg_list_declContext *func_arg_list_decl();
+    */
+
+    antlrcpp::Any visitFunc_arg_list_decl(tlParser::Func_arg_list_declContext *context)
+    {
+        std::cout << "Func_arg_list_decl" << std::endl;
+
+        for(int i=0;i<context->func_arg().size();i++)
+        {
+            ContextValue * contex_value = visit(context->func_arg().at(1));
+        }
+
+        return new ContextValue();
+    }
+
+    antlrcpp::Any visitFunc_arg(tlParser::Func_argContext *context)
+    {
+        std::cout << "visitFunc_arg" << std::endl;
+
+        return new ContextValue();
     }
 
     antlrcpp::Any visitWhile_statement(tlParser::While_statementContext *context)
@@ -368,16 +486,6 @@ public:
             }
         }
         return new ContextValue();
-    }
-
-    antlrcpp::Any visitId_list_decl(tlParser::Id_list_declContext *context)
-    {
-
-    }
-
-    antlrcpp::Any visitExpr_list(tlParser::Expr_listContext *context)
-    {
-
     }
 
     antlrcpp::Any visitIndex(tlParser::IndexContext *context)
@@ -473,7 +581,6 @@ public:
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
-
             Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() > ((IntObj*)(contex_value_r->get_obj()))->get_value());
             return new ContextValue(return_obj, NULL);
         }

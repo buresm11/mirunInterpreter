@@ -31,7 +31,11 @@ public:
 
     virtual antlrcpp::Any visitVariable_def(tlParser::Variable_defContext *context) = 0;
 
-    virtual antlrcpp::Any visitFunction_call(tlParser::Function_callContext *context) = 0;
+    virtual antlrcpp::Any visitIdentifierFunctionCall(tlParser::IdentifierFunctionCallContext *context) = 0;
+
+    virtual antlrcpp::Any visitPrintFunctionCall(tlParser::PrintFunctionCallContext *context) = 0;
+
+    virtual antlrcpp::Any visitScanFunctionCall(tlParser::ScanFunctionCallContext *context) = 0;
 
     virtual antlrcpp::Any visitIf_statement(tlParser::If_statementContext *context) = 0;
 
@@ -45,9 +49,9 @@ public:
 
     virtual antlrcpp::Any visitWhile_statement(tlParser::While_statementContext *context) = 0;
 
-    virtual antlrcpp::Any visitId_list_decl(tlParser::Id_list_declContext *context) = 0;
+    virtual antlrcpp::Any visitFunc_arg_list_decl(tlParser::Func_arg_list_declContext *context) = 0;
 
-    virtual antlrcpp::Any visitExpr_list(tlParser::Expr_listContext *context) = 0;
+    virtual antlrcpp::Any visitFunc_arg(tlParser::Func_argContext *context) = 0;
 
     virtual antlrcpp::Any visitLtExpression(tlParser::LtExpressionContext *context) = 0;
 

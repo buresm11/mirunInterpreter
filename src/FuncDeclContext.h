@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include "Error.h"
+#include "FuncArg.h"
 
-class ContextValue 
+class FuncDeclContext
 {
-	Obj * obj;
+	FuncArg * funcArg;
 	Error * error;
 	bool is_error;
 	bool is_value;

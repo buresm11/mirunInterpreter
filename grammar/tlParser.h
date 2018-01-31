@@ -13,19 +13,20 @@ class  tlParser : public antlr4::Parser {
 public:
   enum {
     Def = 1, If = 2, Else = 3, Return = 4, While = 5, To = 6, Do = 7, End = 8, 
-    Or = 9, And = 10, Equals = 11, NEquals = 12, GTEquals = 13, LTEquals = 14, 
-    Pow = 15, Excl = 16, GT = 17, LT = 18, Add = 19, Subtract = 20, Multiply = 21, 
-    Divide = 22, Modulus = 23, OBrace = 24, CBrace = 25, OBracket = 26, 
-    CBracket = 27, OParen = 28, CParen = 29, SColon = 30, Assign = 31, Comma = 32, 
-    QMark = 33, Colon = 34, Type_identifier = 35, Bool = 36, Number = 37, 
-    Identifier = 38, String = 39, Comment = 40, Space = 41
+    Print = 9, Scan = 10, Or = 11, And = 12, Equals = 13, NEquals = 14, 
+    GTEquals = 15, LTEquals = 16, Pow = 17, Excl = 18, GT = 19, LT = 20, 
+    Add = 21, Subtract = 22, Multiply = 23, Divide = 24, Modulus = 25, OBrace = 26, 
+    CBrace = 27, OBracket = 28, CBracket = 29, OParen = 30, CParen = 31, 
+    SColon = 32, Assign = 33, Comma = 34, QMark = 35, Colon = 36, Type_identifier = 37, 
+    Bool = 38, Number = 39, Identifier = 40, String = 41, Comment = 42, 
+    Space = 43
   };
 
   enum {
     RuleParse = 0, RuleTop_block = 1, RuleBlock = 2, RuleStatement = 3, 
     RuleAssignment = 4, RuleVariable_def = 5, RuleFunction_call = 6, RuleIf_statement = 7, 
     RuleIf_stat = 8, RuleElse_if_stat = 9, RuleElse_stat = 10, RuleFunction_decl = 11, 
-    RuleWhile_statement = 12, RuleId_list_decl = 13, RuleExpr_list = 14, 
+    RuleWhile_statement = 12, RuleFunc_arg_list_decl = 13, RuleFunc_arg = 14, 
     RuleExpression = 15, RuleIndex = 16
   };
 
@@ -52,8 +53,8 @@ public:
   class Else_statContext;
   class Function_declContext;
   class While_statementContext;
-  class Id_list_declContext;
-  class Expr_listContext;
+  class Func_arg_list_declContext;
+  class Func_argContext;
   class ExpressionContext;
   class IndexContext; 
 
@@ -165,15 +166,52 @@ public:
   class  Function_callContext : public antlr4::ParserRuleContext {
   public:
     Function_callContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *Identifier();
-    Expr_listContext *expr_list();
+   
+    Function_callContext() : antlr4::ParserRuleContext() { }
+    void copyFrom(Function_callContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
 
+    virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  ScanFunctionCallContext : public Function_callContext {
+  public:
+    ScanFunctionCallContext(Function_callContext *ctx);
+
+    antlr4::tree::TerminalNode *Scan();
+    antlr4::tree::TerminalNode *Identifier();
+    IndexContext *index();
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
+  };
+
+  class  IdentifierFunctionCallContext : public Function_callContext {
+  public:
+    IdentifierFunctionCallContext(Function_callContext *ctx);
+
+    antlr4::tree::TerminalNode *Identifier();
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  PrintFunctionCallContext : public Function_callContext {
+  public:
+    PrintFunctionCallContext(Function_callContext *ctx);
+
+    antlr4::tree::TerminalNode *Print();
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
   Function_callContext* function_call();
@@ -260,7 +298,7 @@ public:
     antlr4::tree::TerminalNode *Identifier();
     BlockContext *block();
     antlr4::tree::TerminalNode *End();
-    Id_list_declContext *id_list_decl();
+    Func_arg_list_declContext *func_arg_list_decl();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -290,14 +328,12 @@ public:
 
   While_statementContext* while_statement();
 
-  class  Id_list_declContext : public antlr4::ParserRuleContext {
+  class  Func_arg_list_declContext : public antlr4::ParserRuleContext {
   public:
-    Id_list_declContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    Func_arg_list_declContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    std::vector<antlr4::tree::TerminalNode *> Type_identifier();
-    antlr4::tree::TerminalNode* Type_identifier(size_t i);
-    std::vector<antlr4::tree::TerminalNode *> Identifier();
-    antlr4::tree::TerminalNode* Identifier(size_t i);
+    std::vector<Func_argContext *> func_arg();
+    Func_argContext* func_arg(size_t i);
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -306,14 +342,14 @@ public:
    
   };
 
-  Id_list_declContext* id_list_decl();
+  Func_arg_list_declContext* func_arg_list_decl();
 
-  class  Expr_listContext : public antlr4::ParserRuleContext {
+  class  Func_argContext : public antlr4::ParserRuleContext {
   public:
-    Expr_listContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    Func_argContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    std::vector<ExpressionContext *> expression();
-    ExpressionContext* expression(size_t i);
+    antlr4::tree::TerminalNode *Type_identifier();
+    antlr4::tree::TerminalNode *Identifier();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -322,7 +358,7 @@ public:
    
   };
 
-  Expr_listContext* expr_list();
+  Func_argContext* func_arg();
 
   class  ExpressionContext : public antlr4::ParserRuleContext {
   public:

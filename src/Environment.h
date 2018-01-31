@@ -159,12 +159,70 @@ public:
 		}
 		else 
 		{
-			return new ContextValue(it->second->copy(), NULL);
+			if(it->second->get_type() == ArrayType)
+				return new ContextValue(it->second, NULL);
+			else 
+				return new ContextValue(it->second->copy(), NULL);
+		}
+	}
+	
+	ContextValue* look_up_array_variable(std::string name, int index) {
+
+		std::map<std::string, Obj *>::iterator it;
+		it = variables.find(name);
+
+		if ( it == variables.end() ) 
+		{
+			if(parent == NULL) 
+			{
+				return new ContextValue(NULL, new Error(7, "Variable " + name + " not found"));
+			}
+			else return parent->look_up_array_variable(name, index);
+		} 
+		else 
+		{
+			if(it->second->get_type() == ArrayType)
+			{
+				ArrayObj * array_obj = (ArrayObj*)it->second;
+				Obj ** array = array_obj->get_value();
+				int array_size = array_obj->get_array_size();
+
+				if(index >= 0 && index < array_size)
+				{
+					return new ContextValue(array[index]->copy(), NULL);
+				}
+				else 
+				{
+					return new ContextValue(NULL, new Error(10, "out of bounds"));
+				}
+			}
+			else 
+			{
+				return new ContextValue(NULL, new Error(9, "cannot do [] on non array"));
+			}
+		}
+	} 
+
+	ContextValue* look_up_scan_variable(std::string name) {
+
+		std::map<std::string, Obj *>::iterator it;
+		it = variables.find(name);
+
+		if(it == variables.end())
+		{
+			if(parent == NULL) 
+		  	{
+		  		return new ContextValue(NULL, new Error(7, "Variable " + name + " not found"));
+		  	}
+			else return parent->look_up_variable(name);
+		}
+		else 
+		{
+			return new ContextValue(it->second, NULL);
 		}
 	}
 
-	
-	ContextValue* look_up_array_variable(std::string name, int index) {
+	ContextValue* look_up_array_scan_variable(std::string name, int index) {
 
 		std::map<std::string, Obj *>::iterator it;
 		it = variables.find(name);

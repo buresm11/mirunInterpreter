@@ -10,3 +10,4 @@ new Error(9, "cannot do [] on non array"));
 new Error(10, "out of bounds"));
 new Error(11, "types do not match"));
 new Error(12, "operation do not supperted"));
+new Error(13, "Unknow type"));

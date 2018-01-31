@@ -39,7 +39,15 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitFunction_call(tlParser::Function_callContext *ctx) override {
+  virtual antlrcpp::Any visitIdentifierFunctionCall(tlParser::IdentifierFunctionCallContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitPrintFunctionCall(tlParser::PrintFunctionCallContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitScanFunctionCall(tlParser::ScanFunctionCallContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -67,11 +75,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitId_list_decl(tlParser::Id_list_declContext *ctx) override {
+  virtual antlrcpp::Any visitFunc_arg_list_decl(tlParser::Func_arg_list_declContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitExpr_list(tlParser::Expr_listContext *ctx) override {
+  virtual antlrcpp::Any visitFunc_arg(tlParser::Func_argContext *ctx) override {
     return visitChildren(ctx);
   }
 

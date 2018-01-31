@@ -34,8 +34,14 @@ public:
   virtual void enterVariable_def(tlParser::Variable_defContext * /*ctx*/) override { }
   virtual void exitVariable_def(tlParser::Variable_defContext * /*ctx*/) override { }
 
-  virtual void enterFunction_call(tlParser::Function_callContext * /*ctx*/) override { }
-  virtual void exitFunction_call(tlParser::Function_callContext * /*ctx*/) override { }
+  virtual void enterIdentifierFunctionCall(tlParser::IdentifierFunctionCallContext * /*ctx*/) override { }
+  virtual void exitIdentifierFunctionCall(tlParser::IdentifierFunctionCallContext * /*ctx*/) override { }
+
+  virtual void enterPrintFunctionCall(tlParser::PrintFunctionCallContext * /*ctx*/) override { }
+  virtual void exitPrintFunctionCall(tlParser::PrintFunctionCallContext * /*ctx*/) override { }
+
+  virtual void enterScanFunctionCall(tlParser::ScanFunctionCallContext * /*ctx*/) override { }
+  virtual void exitScanFunctionCall(tlParser::ScanFunctionCallContext * /*ctx*/) override { }
 
   virtual void enterIf_statement(tlParser::If_statementContext * /*ctx*/) override { }
   virtual void exitIf_statement(tlParser::If_statementContext * /*ctx*/) override { }
@@ -55,11 +61,11 @@ public:
   virtual void enterWhile_statement(tlParser::While_statementContext * /*ctx*/) override { }
   virtual void exitWhile_statement(tlParser::While_statementContext * /*ctx*/) override { }
 
-  virtual void enterId_list_decl(tlParser::Id_list_declContext * /*ctx*/) override { }
-  virtual void exitId_list_decl(tlParser::Id_list_declContext * /*ctx*/) override { }
+  virtual void enterFunc_arg_list_decl(tlParser::Func_arg_list_declContext * /*ctx*/) override { }
+  virtual void exitFunc_arg_list_decl(tlParser::Func_arg_list_declContext * /*ctx*/) override { }
 
-  virtual void enterExpr_list(tlParser::Expr_listContext * /*ctx*/) override { }
-  virtual void exitExpr_list(tlParser::Expr_listContext * /*ctx*/) override { }
+  virtual void enterFunc_arg(tlParser::Func_argContext * /*ctx*/) override { }
+  virtual void exitFunc_arg(tlParser::Func_argContext * /*ctx*/) override { }
 
   virtual void enterLtExpression(tlParser::LtExpressionContext * /*ctx*/) override { }
   virtual void exitLtExpression(tlParser::LtExpressionContext * /*ctx*/) override { }

@@ -1,5 +1,10 @@
 #pragma once
 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <map>
+
 #include "Obj.h"
 #include "Types.h"
 
@@ -9,17 +14,23 @@ class ArrayObj : public Obj {
 	int array_size;
 
 public:
-	ArrayObj(int array_size, Obj ** value) : Obj(ArrayType), value(value), array_size(array_size) { }
+	ArrayObj(int array_size, Obj ** value) : Obj(ArrayType), value(value), array_size(array_size) 
+	{
+		std::cout << "xx" << array_size << std::endl;
+	}
 
-	Obj ** get_value(){
+	Obj ** get_value()
+	{
 		return value;
 	}
 
-	void set_value(Obj ** value){
+	void set_value(Obj ** value)
+	{
 		this->value = value;
 	}
 
-	int get_array_size() {
+	int get_array_size() 
+	{
 		return array_size;
 	}
 };

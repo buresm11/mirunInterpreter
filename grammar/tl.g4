@@ -29,7 +29,9 @@ assignment
  ;
 
 function_call
- : Identifier '(' expr_list? ')'
+ : Identifier '(' (expression (',' expression)*)? ')' #identifierFunctionCall
+ | Print '(' expression ')'							  #printFunctionCall
+ | Scan '(' Identifier index? ')'					  #scanFunctionCall
  ;
 
 if_statement
@@ -49,19 +51,19 @@ else_stat
  ;
 
 function_decl
- : Def Type_identifier Identifier '(' id_list_decl? ')' block End
+ : Def Type_identifier Identifier '(' func_arg_list_decl? ')' block End
  ;
 
 while_statement
  : While expression Do block End
  ;
 
- id_list_decl
- : Type_identifier Identifier (',' Type_identifier Identifier)*
+ func_arg_list_decl
+ : func_arg (',' func_arg)*
  ;
 
-expr_list
- : expression (',' expression)*
+ func_arg
+ : Type_identifier Identifier
  ;
 
 expression
@@ -99,6 +101,8 @@ While    : 'while';
 To       : 'to';
 Do       : 'do';
 End      : 'end';
+Print    : 'print';
+Scan     : 'scan';
 
 Or       : '||';
 And      : '&&';
