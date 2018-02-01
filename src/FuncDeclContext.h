@@ -2,36 +2,37 @@
 #pragma once
 
 #include "FuncArg.h"
+#include "Error.h"
 
 class FuncDeclContext
 {
-	FuncArg * funcArg;
+	FuncArg * func_arg;
 	Error * error;
 	bool is_error;
 	bool is_value;
 
 public:
 
-	ContextValue()
+	FuncDeclContext()
 	{
 		error = NULL;
-		obj = NULL;
+		func_arg = NULL;
 		is_error = false;
 		is_value = false;
 	}
 
-	ContextValue(Obj * obj, Error * error) : obj(obj), error(error), is_error(true)  
+	FuncDeclContext(FuncArg * func_arg, Error * error) : func_arg(func_arg), error(error), is_error(true)  
 	{
 		if(error == NULL)
 			is_error = false;
 
-		if(obj == NULL)
+		if(func_arg == NULL)
 			is_value = false;
 	}
 
-	Obj * get_obj()
+	FuncArg * get_func_arg()
 	{
-		return obj;
+		return func_arg;
 	}
 
 	Error * get_error()

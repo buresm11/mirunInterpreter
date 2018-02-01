@@ -31,6 +31,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitReturn_statement(tlParser::Return_statementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitAssignment(tlParser::AssignmentContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -67,19 +71,27 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitFunction_decl(tlParser::Function_declContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitWhile_statement(tlParser::While_statementContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitFunc_arg_list_decl(tlParser::Func_arg_list_declContext *ctx) override {
+  virtual antlrcpp::Any visitFunction_decl(tlParser::Function_declContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitFunc_arg(tlParser::Func_argContext *ctx) override {
+  virtual antlrcpp::Any visitFunc_decl_type_list(tlParser::Func_decl_type_listContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitFunc_decl_type_arg(tlParser::Func_decl_type_argContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitFunc_decl_type(tlParser::Func_decl_typeContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitFunc_decl_array_type(tlParser::Func_decl_array_typeContext *ctx) override {
     return visitChildren(ctx);
   }
 

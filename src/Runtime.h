@@ -11,50 +11,30 @@
 #include "StringObj.h"
 #include "BoolObj.h"
 #include "Environment.h"
+#include "Scope.h"
+#include "Function.h"
 
 #define HEAP_SIZE 500
 
 class Visitor;
 
 class Runtime {
-	Environment * environment;
-	Obj *** heap;
-	//Function * functions;
 
+	Obj *** heap;
 	int allocated_records;
+	std::map<std::string, Function *> functions;
 
 public:
 
-	Runtime() {
-		this->environment = new Environment();
+	Runtime() 
+	{
 		this->heap = new Obj**[HEAP_SIZE];
 		this->allocated_records = 0;
 	}
 
-	~Runtime(){
-		delete environment;
-	}
-
-	Environment * current_environment(){
-		return environment;
-	}
-
-	void create_new_environment(){
-		Environment * new_environment = new Environment(this->environment);
-		this->environment = new_environment;
-	}	
-
-	void remove_top_environment() { 
-		if(environment->get_parent() != NULL) {
-			Environment * tmp = this->environment;
-			this->environment = environment->get_parent();
-			delete tmp;
-		}
-	}
-
-	void allocate_on_heap(Obj ** obj) {
+	void allocate_on_heap(Obj ** obj)
+	 {
 		int slot = find_empty_slot();
-
 		heap[slot] = obj;
 	}
 
@@ -67,15 +47,21 @@ public:
 		}
 	}
 
-	void create_new_function()
+	ContextValue * create_new_function(std::string name, Function * function)
 	{
-		
+		if (this->functions.insert(std::pair<std::string, Function *>(name, function)).second == false)
+		{
+			return new ContextValue(NULL, new Error(15, "Function " + name + " is already defined in current scope" ));
+		}
+		else
+		{
+			return new ContextValue();
+		}
 	}
 
-	ContextValue * invoke_function (Visitor* visitor, std::string name, ContextValue ** params, int params_count);
+	ContextValue * invoke_function (std::string name, Obj ** params, int params_count);
 
 /// built-in functions
-
 
 	ContextValue * print(Obj * obj)
 	{
@@ -128,9 +114,9 @@ public:
 		return new ContextValue(array_obj, NULL);
 	}
 
-	ContextValue * scan(std::string name)
+	ContextValue * scan(std::string name, Scope * scope)
 	{
-		ContextValue * context_value = environment->look_up_scan_variable(name);
+		ContextValue * context_value = scope->current_environment()->look_up_scan_variable(name);
 
 		if(context_value->has_error())
 		{
@@ -140,9 +126,9 @@ public:
 		return scan_variable(context_value->get_obj());
 	}
 
-	ContextValue * scan(std::string name, int index)
+	ContextValue * scan(std::string name, int index, Scope * scope)
 	{
-		ContextValue * context_value = environment->look_up_array_scan_variable(name, index);
+		ContextValue * context_value = scope->current_environment()->look_up_array_scan_variable(name, index);
 
 		if(context_value->has_error())
 		{

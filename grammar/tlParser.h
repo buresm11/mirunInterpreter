@@ -13,21 +13,22 @@ class  tlParser : public antlr4::Parser {
 public:
   enum {
     Def = 1, If = 2, Else = 3, Return = 4, While = 5, To = 6, Do = 7, End = 8, 
-    Print = 9, Scan = 10, Or = 11, And = 12, Equals = 13, NEquals = 14, 
-    GTEquals = 15, LTEquals = 16, Pow = 17, Excl = 18, GT = 19, LT = 20, 
-    Add = 21, Subtract = 22, Multiply = 23, Divide = 24, Modulus = 25, OBrace = 26, 
-    CBrace = 27, OBracket = 28, CBracket = 29, OParen = 30, CParen = 31, 
-    SColon = 32, Assign = 33, Comma = 34, QMark = 35, Colon = 36, Type_identifier = 37, 
-    Bool = 38, Number = 39, Identifier = 40, String = 41, Comment = 42, 
-    Space = 43
+    Print = 9, Scan = 10, AraryDeclSign = 11, Or = 12, And = 13, Equals = 14, 
+    NEquals = 15, GTEquals = 16, LTEquals = 17, Pow = 18, Excl = 19, GT = 20, 
+    LT = 21, Add = 22, Subtract = 23, Multiply = 24, Divide = 25, Modulus = 26, 
+    OBrace = 27, CBrace = 28, OBracket = 29, CBracket = 30, OParen = 31, 
+    CParen = 32, SColon = 33, Assign = 34, Comma = 35, QMark = 36, Colon = 37, 
+    Type_identifier = 38, Bool = 39, Number = 40, Identifier = 41, String = 42, 
+    Comment = 43, Space = 44
   };
 
   enum {
     RuleParse = 0, RuleTop_block = 1, RuleBlock = 2, RuleStatement = 3, 
-    RuleAssignment = 4, RuleVariable_def = 5, RuleFunction_call = 6, RuleIf_statement = 7, 
-    RuleIf_stat = 8, RuleElse_if_stat = 9, RuleElse_stat = 10, RuleFunction_decl = 11, 
-    RuleWhile_statement = 12, RuleFunc_arg_list_decl = 13, RuleFunc_arg = 14, 
-    RuleExpression = 15, RuleIndex = 16
+    RuleReturn_statement = 4, RuleAssignment = 5, RuleVariable_def = 6, 
+    RuleFunction_call = 7, RuleIf_statement = 8, RuleIf_stat = 9, RuleElse_if_stat = 10, 
+    RuleElse_stat = 11, RuleWhile_statement = 12, RuleFunction_decl = 13, 
+    RuleFunc_decl_type_list = 14, RuleFunc_decl_type_arg = 15, RuleFunc_decl_type = 16, 
+    RuleFunc_decl_array_type = 17, RuleExpression = 18, RuleIndex = 19
   };
 
   tlParser(antlr4::TokenStream *input);
@@ -44,6 +45,7 @@ public:
   class Top_blockContext;
   class BlockContext;
   class StatementContext;
+  class Return_statementContext;
   class AssignmentContext;
   class Variable_defContext;
   class Function_callContext;
@@ -51,10 +53,12 @@ public:
   class If_statContext;
   class Else_if_statContext;
   class Else_statContext;
-  class Function_declContext;
   class While_statementContext;
-  class Func_arg_list_declContext;
-  class Func_argContext;
+  class Function_declContext;
+  class Func_decl_type_listContext;
+  class Func_decl_type_argContext;
+  class Func_decl_typeContext;
+  class Func_decl_array_typeContext;
   class ExpressionContext;
   class IndexContext; 
 
@@ -98,8 +102,6 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<StatementContext *> statement();
     StatementContext* statement(size_t i);
-    antlr4::tree::TerminalNode *Return();
-    ExpressionContext *expression();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -119,6 +121,7 @@ public:
     Function_callContext *function_call();
     If_statementContext *if_statement();
     While_statementContext *while_statement();
+    Return_statementContext *return_statement();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -128,6 +131,22 @@ public:
   };
 
   StatementContext* statement();
+
+  class  Return_statementContext : public antlr4::ParserRuleContext {
+  public:
+    Return_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Return();
+    ExpressionContext *expression();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Return_statementContext* return_statement();
 
   class  AssignmentContext : public antlr4::ParserRuleContext {
   public:
@@ -289,26 +308,6 @@ public:
 
   Else_statContext* else_stat();
 
-  class  Function_declContext : public antlr4::ParserRuleContext {
-  public:
-    Function_declContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *Def();
-    antlr4::tree::TerminalNode *Type_identifier();
-    antlr4::tree::TerminalNode *Identifier();
-    BlockContext *block();
-    antlr4::tree::TerminalNode *End();
-    Func_arg_list_declContext *func_arg_list_decl();
-
-    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
-    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
-  };
-
-  Function_declContext* function_decl();
-
   class  While_statementContext : public antlr4::ParserRuleContext {
   public:
     While_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
@@ -328,12 +327,15 @@ public:
 
   While_statementContext* while_statement();
 
-  class  Func_arg_list_declContext : public antlr4::ParserRuleContext {
+  class  Function_declContext : public antlr4::ParserRuleContext {
   public:
-    Func_arg_list_declContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    Function_declContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    std::vector<Func_argContext *> func_arg();
-    Func_argContext* func_arg(size_t i);
+    antlr4::tree::TerminalNode *Def();
+    Func_decl_type_argContext *func_decl_type_arg();
+    BlockContext *block();
+    antlr4::tree::TerminalNode *End();
+    Func_decl_type_listContext *func_decl_type_list();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -342,11 +344,43 @@ public:
    
   };
 
-  Func_arg_list_declContext* func_arg_list_decl();
+  Function_declContext* function_decl();
 
-  class  Func_argContext : public antlr4::ParserRuleContext {
+  class  Func_decl_type_listContext : public antlr4::ParserRuleContext {
   public:
-    Func_argContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    Func_decl_type_listContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<Func_decl_type_argContext *> func_decl_type_arg();
+    Func_decl_type_argContext* func_decl_type_arg(size_t i);
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Func_decl_type_listContext* func_decl_type_list();
+
+  class  Func_decl_type_argContext : public antlr4::ParserRuleContext {
+  public:
+    Func_decl_type_argContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    Func_decl_typeContext *func_decl_type();
+    Func_decl_array_typeContext *func_decl_array_type();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Func_decl_type_argContext* func_decl_type_arg();
+
+  class  Func_decl_typeContext : public antlr4::ParserRuleContext {
+  public:
+    Func_decl_typeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Type_identifier();
     antlr4::tree::TerminalNode *Identifier();
@@ -358,7 +392,24 @@ public:
    
   };
 
-  Func_argContext* func_arg();
+  Func_decl_typeContext* func_decl_type();
+
+  class  Func_decl_array_typeContext : public antlr4::ParserRuleContext {
+  public:
+    Func_decl_array_typeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Type_identifier();
+    antlr4::tree::TerminalNode *Identifier();
+    antlr4::tree::TerminalNode *AraryDeclSign();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Func_decl_array_typeContext* func_decl_array_type();
 
   class  ExpressionContext : public antlr4::ParserRuleContext {
   public:

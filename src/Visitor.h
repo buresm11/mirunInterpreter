@@ -12,17 +12,27 @@
 #include "BoolObj.h"
 #include "ArrayObj.h"
 #include "ContextValue.h"
+#include "FuncDeclContext.h"
+#include "Function.h"
+#include "FuncArg.h"
+#include "Scope.h"
 
 class Runtime;
 
 class Visitor : public tlVisitor 
 {
     Runtime * runtime;
+    Scope * scope;
 
 public:
     Visitor(Runtime * runtime) : runtime(runtime)
     {
+        scope = new Scope();
+    }
 
+    Scope * get_scope()
+    {
+        return scope;
     }
 
     antlrcpp::Any visitParse(tlParser::ParseContext *context)
@@ -36,7 +46,7 @@ public:
             std::cout << context_value->get_error()->get_text() << std::endl;
         }
 
-        runtime->current_environment()->show_variable();
+        scope->current_environment()->show_variable();
 
         ContextValue * return_value = new ContextValue();
         return return_value;
@@ -110,6 +120,11 @@ public:
         return context_value_statement;
     }
 
+    antlrcpp::Any visitReturn_statement(tlParser::Return_statementContext *context)
+    {
+
+    }
+
     antlrcpp::Any visitAssignment(tlParser::AssignmentContext *context)
     {
         std::cout << "assignment" << std::endl;
@@ -129,13 +144,13 @@ public:
             }
             else
             {
-                return runtime->current_environment()->set_array_variable(context->Identifier()->getText(), context_value_expression->get_obj(), 
+                return scope->current_environment()->set_array_variable(context->Identifier()->getText(), context_value_expression->get_obj(), 
                                     ((IntObj *)context_value_index->get_obj())->get_value()); 
             }
         }
         else
         {
-            return runtime->current_environment()->set_variable(context->Identifier()->getText(), context_value_expression->get_obj());  
+            return scope->current_environment()->set_variable(context->Identifier()->getText(), context_value_expression->get_obj());  
         }
     }
 
@@ -183,7 +198,7 @@ public:
            return new ContextValue(NULL, new Error(1, "Unexpexted type " + type));
         }
 
-        return runtime->current_environment()->create_variable(name, var);
+        return scope->current_environment()->create_variable(name, var);
     }
 
     ContextValue* new_array_variable_def(std::string type, std::string name, int index)
@@ -197,9 +212,11 @@ public:
 
 
         Obj ** var = new Obj*[index];
+        Type type_content;
 
         if(type.compare("string") == 0)
         {
+            type_content = StringType;
             for(int i=0;i<index;i++)
             {
                 var[i] = new StringObj();
@@ -208,6 +225,7 @@ public:
         }
         else if(type.compare("int") == 0)
         {
+            type_content = IntType;
             for(int i=0;i<index;i++)
             {
                 var[i] = new IntObj();
@@ -215,6 +233,7 @@ public:
         }
         else if(type.compare("bool") == 0)
         {
+            type_content = BoolType;
             for(int i=0;i<index;i++)
             {
                 var[i] = new BoolObj();
@@ -225,10 +244,10 @@ public:
            return new ContextValue(NULL, new Error(1, "Unexpexted type " + type));
         }
 
-        Obj * array_var = new ArrayObj(index, var);
+        Obj * array_var = new ArrayObj(index, var, type_content);
         runtime->allocate_on_heap(var);
 
-        return runtime->current_environment()->create_variable(name, array_var);
+        return scope->current_environment()->create_variable(name, array_var);
     }
 
     antlrcpp::Any visitPrintFunctionCall(tlParser::PrintFunctionCallContext *context)
@@ -256,11 +275,11 @@ public:
             }
             else
             {
-                return runtime->scan(context->Identifier()->getText(), ((IntObj *)context_value_index->get_obj())->get_value());
+                return runtime->scan(context->Identifier()->getText(), ((IntObj *)context_value_index->get_obj())->get_value(), scope);
             }
         }
 
-        return runtime->scan(context->Identifier()->getText());
+        return runtime->scan(context->Identifier()->getText(), scope);
     }
 
     antlrcpp::Any visitIdentifierFunctionCall(tlParser::IdentifierFunctionCallContext *context)
@@ -268,30 +287,30 @@ public:
         std::cout << "func_Call" << std::endl;
 
         std::string name = context->Identifier()->getText();
-        int params_size = context->expression().size();
+        int args_size = context->expression().size();
 
-        ContextValue ** params = new ContextValue*[params_size];
+        Obj ** args = new Obj*[args_size];
 
-        for(int i=0;i< params_size; i++)
+        for(int i=0;i< args_size; i++)
         {
             ContextValue * context_value_expression = visit(context->expression().at(i));
             if(context_value_expression->has_error()) 
             {
-                for(int i=0;i< params_size; i++)
+                for(int i=0;i< args_size; i++)
                 {
-                    delete params[i];
+                    delete args[i];
                 }
-                delete params;
+                delete args;
 
                 return context_value_expression;
             }
             else
             {
-                params[i] = context_value_expression;
+                args[i] = context_value_expression->get_obj();
             }
         }
 
-        return runtime->invoke_function(this, name, params, params_size);
+        return runtime->invoke_function(name, args, args_size);
     }
 
     antlrcpp::Any visitIf_statement(tlParser::If_statementContext *context)
@@ -357,11 +376,11 @@ public:
 
         if(((BoolObj*)context_value_expression->get_obj())->get_value())
         {
-            runtime->create_new_environment();
+            scope->create_new_environment();
             ContextValue * contex_value_if_block = visit(context->block());
             if(contex_value_if_block->has_error()) return contex_value_if_block;
-            runtime->current_environment()->show_variable();
-            runtime->remove_top_environment();
+            scope->current_environment()->show_variable();
+            scope->remove_top_environment();
         }
 
         return context_value_expression;
@@ -380,11 +399,11 @@ public:
 
         if(((BoolObj*)context_value_expression->get_obj())->get_value())
         {
-            runtime->create_new_environment();
+            scope->create_new_environment();
             ContextValue * contex_value_else_if_block = visit(context->block());
             if(contex_value_else_if_block->has_error()) return contex_value_else_if_block;
-            runtime->current_environment()->show_variable();
-            runtime->remove_top_environment();
+            scope->current_environment()->show_variable();
+            scope->remove_top_environment();
         }
 
         return context_value_expression;
@@ -394,11 +413,11 @@ public:
     {
         std::cout << "Else_stat" << std::endl;
 
-        runtime->create_new_environment();
+        scope->create_new_environment();
         ContextValue * contex_value_else_block = visit(context->block());
         if(contex_value_else_block->has_error()) return contex_value_else_block;
-        runtime->current_environment()->show_variable();
-        runtime->remove_top_environment();
+        scope->current_environment()->show_variable();
+        scope->remove_top_environment();
 
         return new ContextValue();
     }
@@ -407,60 +426,176 @@ public:
     {
         std::cout << "Function_decl" << std::endl;
 
-        std::string name = context->Identifier()->getText();
-        std::string type_string = context->Type_identifier()->getText();
+        FuncDeclContext * func_decl_context_type = visit(context->func_decl_type_arg());
 
-        Type return_type;
+        if(func_decl_context_type->has_error())
+        {
+             //error 
+        }
 
-        if(type_string.compare("string") == 0)
+        std::string name = func_decl_context_type->get_func_arg()->get_name();
+        FuncArg * return_type = func_decl_context_type->get_func_arg();
+
+        Function * function;
+        if(context->func_decl_type_list() == NULL)
         {
-            return_type = StringType;
-        }
-        else if(type_string.compare("int") == 0)
-        {
-            return_type = IntType;
-        }
-        else if(type_string.compare("bool") == 0)
-        {
-            return_type = BoolType;
+            function = new Function(context->block(), return_type);
         }
         else
         {
-            //raises error
+           std::vector<FuncDeclContext*> func_decl_context_args = visit(context->func_decl_type_list());
+
+           FuncArg ** args = new FuncArg*[func_decl_context_args.size()]; 
+
+           for(int i=0; i< func_decl_context_args.size(); i++)
+           {
+                if(func_decl_context_args.at(i)->has_error())
+                {
+                    //handle error and delete
+                }
+                args[i] = func_decl_context_args.at(i)->get_func_arg();
+            }
+            function = new Function(context->block(), return_type, args, func_decl_context_args.size());
         }
 
-        ContextValue * context_value = visit(context->func_arg_list_decl());
-
-        return new ContextValue();
+        return runtime->create_new_function(name, function);
     }
 
-    /*
-        antlr4::tree::TerminalNode *Def();
-        antlr4::tree::TerminalNode *Type_identifier();
-        antlr4::tree::TerminalNode *Identifier();
-        BlockContext *block();
-        antlr4::tree::TerminalNode *End();
-        Func_arg_list_declContext *func_arg_list_decl();
-    */
+    antlrcpp::Any visitFunc_decl_type_list(tlParser::Func_decl_type_listContext *context)
+    {
+        std::cout << "Func_decl_type_list" << std::endl;
 
-    antlrcpp::Any visitFunc_arg_list_decl(tlParser::Func_arg_list_declContext *context)
+        std::vector<FuncDeclContext *> func_decl_context_args;
+
+        for(int i=0; i< context->func_decl_type_arg().size(); i++)
+        {
+            FuncDeclContext * func_decl_context_arg = visit(context->func_decl_type_arg().at(i));
+            func_decl_context_args.push_back(func_decl_context_arg);
+        }
+
+        return func_decl_context_args;
+    }
+
+    antlrcpp::Any visitFunc_decl_type_arg(tlParser::Func_decl_type_argContext *context)
+    {
+        std::cout << "Func_decl_type_arg" << std::endl;
+
+        if(context->func_decl_type() != NULL)
+        {   
+            return visit(context->func_decl_type());
+        }
+        else if(context->func_decl_array_type() != NULL)
+        {
+            return visit(context->func_decl_array_type());
+        }
+        else
+        {
+            return new FuncDeclContext(NULL,new Error(14, "Syntax error"));
+        }
+    }
+
+
+    antlrcpp::Any visitFunc_decl_type(tlParser::Func_decl_typeContext *context)
+    {
+        std::cout << "Func_decl_type" << std::endl;
+
+        std::string type_string = context->Type_identifier()->getText();
+
+        Type arg_type;
+        if(type_string.compare("string") == 0)
+        {
+            arg_type = StringType;
+        }
+        else if(type_string.compare("int") == 0)
+        {
+            arg_type = IntType;
+        }
+        else if(type_string.compare("bool") == 0)
+        {
+            arg_type = BoolType;
+        }
+        else
+        {
+            return new FuncDeclContext(NULL, new Error(13, "Unknow type"));
+        }
+
+        FuncArg * func_arg = new FuncArg(context->Identifier()->getText(), false, arg_type);
+        return new FuncDeclContext(func_arg, NULL);
+    }
+
+    antlrcpp::Any visitFunc_decl_array_type(tlParser::Func_decl_array_typeContext *context)
+    {
+        std::cout << "Func_decl_array_type" << std::endl;
+
+        std::string type_string = context->Type_identifier()->getText();
+
+        Type arg_type;
+        if(type_string.compare("string") == 0)
+        {
+            arg_type = StringType;
+        }
+        else if(type_string.compare("int") == 0)
+        {
+            arg_type = IntType;
+        }
+        else if(type_string.compare("bool") == 0)
+        {
+            arg_type = BoolType;
+        }
+        else
+        {
+            return new FuncDeclContext(NULL, new Error(13, "Unknow type"));
+        }
+
+        FuncArg * func_arg = new FuncArg(context->Identifier()->getText(), true, arg_type);
+        return new FuncDeclContext(func_arg, NULL);
+    }
+
+    /*antlrcpp::Any visitFunc_arg_list_decl(tlParser::Func_arg_list_declContext *context)
     {
         std::cout << "Func_arg_list_decl" << std::endl;
 
         for(int i=0;i<context->func_arg().size();i++)
         {
-            ContextValue * contex_value = visit(context->func_arg().at(1));
+            FuncDeclContext * contex_value = visit(context->func_arg().at(1));
         }
 
-        return new ContextValue();
+        return new FuncDeclContext();
     }
 
     antlrcpp::Any visitFunc_arg(tlParser::Func_argContext *context)
     {
-        std::cout << "visitFunc_arg" << std::endl;
+        std::cout << "Func_arg" << std::endl;
 
-        return new ContextValue();
-    }
+        std::string name = context->Identifier()->getText();
+        std::string type_string = context->Type_identifier()->getText();
+
+        if(context->arrayDecl() == NULL)
+        {
+            std::cout << "cx" << std::endl ;
+        }
+
+        Type arg_type;
+
+        if(type_string.compare("string") == 0)
+        {
+            arg_type = StringType;
+        }
+        else if(type_string.compare("int") == 0)
+        {
+            arg_type = IntType;
+        }
+        else if(type_string.compare("bool") == 0)
+        {
+            arg_type = BoolType;
+        }
+        else
+        {
+            return new FuncDeclContext(NULL, new Error(13, "Unknow type"));
+        }
+
+        return new FuncDeclContext(new FuncArg(name, arg_type), NULL);
+    }*/
 
     antlrcpp::Any visitWhile_statement(tlParser::While_statementContext *context)
     {
@@ -478,11 +613,11 @@ public:
             if(!((BoolObj*)context_value_expression->get_obj())->get_value()) break;
             else
             {
-                runtime->create_new_environment();
+                scope->create_new_environment();
                 ContextValue * contex_value_else_block = visit(context->block());
                 if(contex_value_else_block->has_error()) return contex_value_else_block;
-                runtime->current_environment()->show_variable();
-                runtime->remove_top_environment();
+                scope->current_environment()->show_variable();
+                scope->remove_top_environment();
             }
         }
         return new ContextValue();
@@ -525,13 +660,13 @@ public:
             }
             else
             {
-                return runtime->current_environment()->look_up_array_variable(context->Identifier()->getText(), 
+                return scope->current_environment()->look_up_array_variable(context->Identifier()->getText(), 
                     ((IntObj *)context_value_index->get_obj())->get_value()); 
             }
         }
         else
         {
-            return runtime->current_environment()->look_up_variable(context->Identifier()->getText());  
+            return scope->current_environment()->look_up_variable(context->Identifier()->getText());  
         }
     }
 

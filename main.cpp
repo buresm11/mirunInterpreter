@@ -38,8 +38,8 @@ int main(int , const char **) {
 
   Runtime * runtime = new Runtime();
 
-  Visitor * visitor = new Visitor(runtime);
-  visitor->visit(tree);
+  Visitor visitor(runtime);
+  visitor.visit(tree);
 
   //delete visitor;
 
@@ -51,3 +51,4 @@ int main(int , const char **) {
 
 
  //check for error in gramma
+// context value is_value true fix - is always falss

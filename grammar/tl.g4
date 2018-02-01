@@ -9,7 +9,7 @@ top_block
  ;
 
 block
- : statement* (Return expression ';')?
+ : statement* 
  ;
 
 statement
@@ -18,6 +18,11 @@ statement
  | function_call ';'
  | if_statement
  | while_statement
+ | return_statement ';'
+ ;
+
+ return_statement
+ : Return expression
  ;
 
 assignment
@@ -50,21 +55,29 @@ else_stat
  : Else Do block
  ;
 
-function_decl
- : Def Type_identifier Identifier '(' func_arg_list_decl? ')' block End
- ;
-
-while_statement
+ while_statement
  : While expression Do block End
  ;
 
- func_arg_list_decl
- : func_arg (',' func_arg)*
+function_decl
+ : Def func_decl_type_arg '(' func_decl_type_list? ')' block End
  ;
 
- func_arg
- : Type_identifier Identifier
+func_decl_type_list
+ : func_decl_type_arg (',' func_decl_type_arg)*
  ;
+
+func_decl_type_arg
+ : (func_decl_type | func_decl_array_type)
+ ;
+
+func_decl_type
+: Type_identifier Identifier
+;
+
+func_decl_array_type
+: Type_identifier Identifier AraryDeclSign
+;
 
 expression
  : '-' expression                           #unaryMinusExpression
@@ -93,16 +106,17 @@ index
  : '[' expression ']'
  ;
 
-Def      : 'def';
-If       : 'if';
-Else     : 'else';
-Return   : 'return';
-While    : 'while';
-To       : 'to';
-Do       : 'do';
-End      : 'end';
-Print    : 'print';
-Scan     : 'scan';
+Def       : 'def';
+If        : 'if';
+Else      : 'else';
+Return    : 'return';
+While     : 'while';
+To        : 'to';
+Do        : 'do';
+End       : 'end';
+Print     : 'print';
+Scan      : 'scan';
+AraryDeclSign : '[]';
 
 Or       : '||';
 And      : '&&';

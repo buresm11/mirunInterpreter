@@ -28,6 +28,9 @@ public:
   virtual void enterStatement(tlParser::StatementContext * /*ctx*/) override { }
   virtual void exitStatement(tlParser::StatementContext * /*ctx*/) override { }
 
+  virtual void enterReturn_statement(tlParser::Return_statementContext * /*ctx*/) override { }
+  virtual void exitReturn_statement(tlParser::Return_statementContext * /*ctx*/) override { }
+
   virtual void enterAssignment(tlParser::AssignmentContext * /*ctx*/) override { }
   virtual void exitAssignment(tlParser::AssignmentContext * /*ctx*/) override { }
 
@@ -55,17 +58,23 @@ public:
   virtual void enterElse_stat(tlParser::Else_statContext * /*ctx*/) override { }
   virtual void exitElse_stat(tlParser::Else_statContext * /*ctx*/) override { }
 
-  virtual void enterFunction_decl(tlParser::Function_declContext * /*ctx*/) override { }
-  virtual void exitFunction_decl(tlParser::Function_declContext * /*ctx*/) override { }
-
   virtual void enterWhile_statement(tlParser::While_statementContext * /*ctx*/) override { }
   virtual void exitWhile_statement(tlParser::While_statementContext * /*ctx*/) override { }
 
-  virtual void enterFunc_arg_list_decl(tlParser::Func_arg_list_declContext * /*ctx*/) override { }
-  virtual void exitFunc_arg_list_decl(tlParser::Func_arg_list_declContext * /*ctx*/) override { }
+  virtual void enterFunction_decl(tlParser::Function_declContext * /*ctx*/) override { }
+  virtual void exitFunction_decl(tlParser::Function_declContext * /*ctx*/) override { }
 
-  virtual void enterFunc_arg(tlParser::Func_argContext * /*ctx*/) override { }
-  virtual void exitFunc_arg(tlParser::Func_argContext * /*ctx*/) override { }
+  virtual void enterFunc_decl_type_list(tlParser::Func_decl_type_listContext * /*ctx*/) override { }
+  virtual void exitFunc_decl_type_list(tlParser::Func_decl_type_listContext * /*ctx*/) override { }
+
+  virtual void enterFunc_decl_type_arg(tlParser::Func_decl_type_argContext * /*ctx*/) override { }
+  virtual void exitFunc_decl_type_arg(tlParser::Func_decl_type_argContext * /*ctx*/) override { }
+
+  virtual void enterFunc_decl_type(tlParser::Func_decl_typeContext * /*ctx*/) override { }
+  virtual void exitFunc_decl_type(tlParser::Func_decl_typeContext * /*ctx*/) override { }
+
+  virtual void enterFunc_decl_array_type(tlParser::Func_decl_array_typeContext * /*ctx*/) override { }
+  virtual void exitFunc_decl_array_type(tlParser::Func_decl_array_typeContext * /*ctx*/) override { }
 
   virtual void enterLtExpression(tlParser::LtExpressionContext * /*ctx*/) override { }
   virtual void exitLtExpression(tlParser::LtExpressionContext * /*ctx*/) override { }

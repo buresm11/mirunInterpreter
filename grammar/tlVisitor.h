@@ -27,6 +27,8 @@ public:
 
     virtual antlrcpp::Any visitStatement(tlParser::StatementContext *context) = 0;
 
+    virtual antlrcpp::Any visitReturn_statement(tlParser::Return_statementContext *context) = 0;
+
     virtual antlrcpp::Any visitAssignment(tlParser::AssignmentContext *context) = 0;
 
     virtual antlrcpp::Any visitVariable_def(tlParser::Variable_defContext *context) = 0;
@@ -45,13 +47,17 @@ public:
 
     virtual antlrcpp::Any visitElse_stat(tlParser::Else_statContext *context) = 0;
 
-    virtual antlrcpp::Any visitFunction_decl(tlParser::Function_declContext *context) = 0;
-
     virtual antlrcpp::Any visitWhile_statement(tlParser::While_statementContext *context) = 0;
 
-    virtual antlrcpp::Any visitFunc_arg_list_decl(tlParser::Func_arg_list_declContext *context) = 0;
+    virtual antlrcpp::Any visitFunction_decl(tlParser::Function_declContext *context) = 0;
 
-    virtual antlrcpp::Any visitFunc_arg(tlParser::Func_argContext *context) = 0;
+    virtual antlrcpp::Any visitFunc_decl_type_list(tlParser::Func_decl_type_listContext *context) = 0;
+
+    virtual antlrcpp::Any visitFunc_decl_type_arg(tlParser::Func_decl_type_argContext *context) = 0;
+
+    virtual antlrcpp::Any visitFunc_decl_type(tlParser::Func_decl_typeContext *context) = 0;
+
+    virtual antlrcpp::Any visitFunc_decl_array_type(tlParser::Func_decl_array_typeContext *context) = 0;
 
     virtual antlrcpp::Any visitLtExpression(tlParser::LtExpressionContext *context) = 0;
 

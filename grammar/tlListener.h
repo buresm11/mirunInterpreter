@@ -26,6 +26,9 @@ public:
   virtual void enterStatement(tlParser::StatementContext *ctx) = 0;
   virtual void exitStatement(tlParser::StatementContext *ctx) = 0;
 
+  virtual void enterReturn_statement(tlParser::Return_statementContext *ctx) = 0;
+  virtual void exitReturn_statement(tlParser::Return_statementContext *ctx) = 0;
+
   virtual void enterAssignment(tlParser::AssignmentContext *ctx) = 0;
   virtual void exitAssignment(tlParser::AssignmentContext *ctx) = 0;
 
@@ -53,17 +56,23 @@ public:
   virtual void enterElse_stat(tlParser::Else_statContext *ctx) = 0;
   virtual void exitElse_stat(tlParser::Else_statContext *ctx) = 0;
 
-  virtual void enterFunction_decl(tlParser::Function_declContext *ctx) = 0;
-  virtual void exitFunction_decl(tlParser::Function_declContext *ctx) = 0;
-
   virtual void enterWhile_statement(tlParser::While_statementContext *ctx) = 0;
   virtual void exitWhile_statement(tlParser::While_statementContext *ctx) = 0;
 
-  virtual void enterFunc_arg_list_decl(tlParser::Func_arg_list_declContext *ctx) = 0;
-  virtual void exitFunc_arg_list_decl(tlParser::Func_arg_list_declContext *ctx) = 0;
+  virtual void enterFunction_decl(tlParser::Function_declContext *ctx) = 0;
+  virtual void exitFunction_decl(tlParser::Function_declContext *ctx) = 0;
 
-  virtual void enterFunc_arg(tlParser::Func_argContext *ctx) = 0;
-  virtual void exitFunc_arg(tlParser::Func_argContext *ctx) = 0;
+  virtual void enterFunc_decl_type_list(tlParser::Func_decl_type_listContext *ctx) = 0;
+  virtual void exitFunc_decl_type_list(tlParser::Func_decl_type_listContext *ctx) = 0;
+
+  virtual void enterFunc_decl_type_arg(tlParser::Func_decl_type_argContext *ctx) = 0;
+  virtual void exitFunc_decl_type_arg(tlParser::Func_decl_type_argContext *ctx) = 0;
+
+  virtual void enterFunc_decl_type(tlParser::Func_decl_typeContext *ctx) = 0;
+  virtual void exitFunc_decl_type(tlParser::Func_decl_typeContext *ctx) = 0;
+
+  virtual void enterFunc_decl_array_type(tlParser::Func_decl_array_typeContext *ctx) = 0;
+  virtual void exitFunc_decl_array_type(tlParser::Func_decl_array_typeContext *ctx) = 0;
 
   virtual void enterLtExpression(tlParser::LtExpressionContext *ctx) = 0;
   virtual void exitLtExpression(tlParser::LtExpressionContext *ctx) = 0;

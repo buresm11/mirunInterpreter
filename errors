@@ -11,3 +11,8 @@ new Error(10, "out of bounds"));
 new Error(11, "types do not match"));
 new Error(12, "operation do not supperted"));
 new Error(13, "Unknow type"));
+new Error(14, "Syntax error"));
+new Error(15, "Function " + name + " is already defined in current scope" ));
+new Error(16, "Function " + name + " not found"));
+new Error(17, "Incorrect number of arguments"));
+new Error(18, "Arguments do not match"));
