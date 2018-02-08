@@ -37,6 +37,7 @@ function_call
  : Identifier '(' (expression (',' expression)*)? ')' #identifierFunctionCall
  | Print '(' expression ')'							  #printFunctionCall
  | Scan '(' Identifier index? ')'					  #scanFunctionCall
+ | PrintLn '(' expression ')'						  #printLnFunctionCall
  ;
 
 if_statement
@@ -60,7 +61,7 @@ else_stat
  ;
 
 function_decl
- : Def func_decl_type_arg '(' func_decl_type_list? ')' block End
+ : Def func_decl_type '(' func_decl_type_list? ')' block End
  ;
 
 func_decl_type_list
@@ -116,6 +117,7 @@ Do        : 'do';
 End       : 'end';
 Print     : 'print';
 Scan      : 'scan';
+PrintLn   : 'println';
 AraryDeclSign : '[]';
 
 Or       : '||';

@@ -13,13 +13,13 @@ class  tlParser : public antlr4::Parser {
 public:
   enum {
     Def = 1, If = 2, Else = 3, Return = 4, While = 5, To = 6, Do = 7, End = 8, 
-    Print = 9, Scan = 10, AraryDeclSign = 11, Or = 12, And = 13, Equals = 14, 
-    NEquals = 15, GTEquals = 16, LTEquals = 17, Pow = 18, Excl = 19, GT = 20, 
-    LT = 21, Add = 22, Subtract = 23, Multiply = 24, Divide = 25, Modulus = 26, 
-    OBrace = 27, CBrace = 28, OBracket = 29, CBracket = 30, OParen = 31, 
-    CParen = 32, SColon = 33, Assign = 34, Comma = 35, QMark = 36, Colon = 37, 
-    Type_identifier = 38, Bool = 39, Number = 40, Identifier = 41, String = 42, 
-    Comment = 43, Space = 44
+    Print = 9, Scan = 10, PrintLn = 11, AraryDeclSign = 12, Or = 13, And = 14, 
+    Equals = 15, NEquals = 16, GTEquals = 17, LTEquals = 18, Pow = 19, Excl = 20, 
+    GT = 21, LT = 22, Add = 23, Subtract = 24, Multiply = 25, Divide = 26, 
+    Modulus = 27, OBrace = 28, CBrace = 29, OBracket = 30, CBracket = 31, 
+    OParen = 32, CParen = 33, SColon = 34, Assign = 35, Comma = 36, QMark = 37, 
+    Colon = 38, Type_identifier = 39, Bool = 40, Number = 41, Identifier = 42, 
+    String = 43, Comment = 44, Space = 45
   };
 
   enum {
@@ -221,6 +221,18 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  PrintLnFunctionCallContext : public Function_callContext {
+  public:
+    PrintLnFunctionCallContext(Function_callContext *ctx);
+
+    antlr4::tree::TerminalNode *PrintLn();
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  PrintFunctionCallContext : public Function_callContext {
   public:
     PrintFunctionCallContext(Function_callContext *ctx);
@@ -332,7 +344,7 @@ public:
     Function_declContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Def();
-    Func_decl_type_argContext *func_decl_type_arg();
+    Func_decl_typeContext *func_decl_type();
     BlockContext *block();
     antlr4::tree::TerminalNode *End();
     Func_decl_type_listContext *func_decl_type_list();

@@ -44,6 +44,9 @@ public:
   virtual void enterScanFunctionCall(tlParser::ScanFunctionCallContext *ctx) = 0;
   virtual void exitScanFunctionCall(tlParser::ScanFunctionCallContext *ctx) = 0;
 
+  virtual void enterPrintLnFunctionCall(tlParser::PrintLnFunctionCallContext *ctx) = 0;
+  virtual void exitPrintLnFunctionCall(tlParser::PrintLnFunctionCallContext *ctx) = 0;
+
   virtual void enterIf_statement(tlParser::If_statementContext *ctx) = 0;
   virtual void exitIf_statement(tlParser::If_statementContext *ctx) = 0;
 

@@ -46,6 +46,9 @@ public:
   virtual void enterScanFunctionCall(tlParser::ScanFunctionCallContext * /*ctx*/) override { }
   virtual void exitScanFunctionCall(tlParser::ScanFunctionCallContext * /*ctx*/) override { }
 
+  virtual void enterPrintLnFunctionCall(tlParser::PrintLnFunctionCallContext * /*ctx*/) override { }
+  virtual void exitPrintLnFunctionCall(tlParser::PrintLnFunctionCallContext * /*ctx*/) override { }
+
   virtual void enterIf_statement(tlParser::If_statementContext * /*ctx*/) override { }
   virtual void exitIf_statement(tlParser::If_statementContext * /*ctx*/) override { }
 

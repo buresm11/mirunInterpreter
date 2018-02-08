@@ -2,31 +2,44 @@
 #pragma once
 
 #include "Error.h"
+#include "Obj.h"
 
 class ContextValue 
 {
 	Obj * obj;
 	Error * error;
 	bool is_error;
-	bool is_value;
+	bool is_done;
 
 public:
-
 	ContextValue()
 	{
 		error = NULL;
 		obj = NULL;
 		is_error = false;
-		is_value = false;
+		is_done = false;
 	}
 
-	ContextValue(Obj * obj, Error * error) : obj(obj), error(error), is_error(true)  
+	ContextValue(Obj * obj, Error * error) : obj(obj), error(error), is_error(true), is_done(false)
 	{
 		if(error == NULL)
 			is_error = false;
+	}
 
-		if(obj == NULL)
-			is_value = false;
+	ContextValue(Obj * obj, Error * error, bool done) : obj(obj), error(error), is_error(true), is_done(done) 
+	{
+		if(error == NULL)
+			is_error = false;
+	}
+
+	~ContextValue()
+	{
+		if(is_error) delete error;
+	}
+
+	void set_done(bool done)
+	{
+		is_done = done;
 	}
 
 	Obj * get_obj()
@@ -44,8 +57,8 @@ public:
 		return is_error;
 	}
 
-	bool has_value()
+	bool has_done()
 	{
-		return is_value;
+		return is_done;
 	}
 };

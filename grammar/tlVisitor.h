@@ -39,6 +39,8 @@ public:
 
     virtual antlrcpp::Any visitScanFunctionCall(tlParser::ScanFunctionCallContext *context) = 0;
 
+    virtual antlrcpp::Any visitPrintLnFunctionCall(tlParser::PrintLnFunctionCallContext *context) = 0;
+
     virtual antlrcpp::Any visitIf_statement(tlParser::If_statementContext *context) = 0;
 
     virtual antlrcpp::Any visitIf_stat(tlParser::If_statContext *context) = 0;

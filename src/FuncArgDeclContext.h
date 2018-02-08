@@ -4,30 +4,25 @@
 #include "FuncArg.h"
 #include "Error.h"
 
-class FuncDeclContext
+class FuncArgDeclContext
 {
 	FuncArg * func_arg;
 	Error * error;
 	bool is_error;
-	bool is_value;
 
 public:
 
-	FuncDeclContext()
+	FuncArgDeclContext()
 	{
 		error = NULL;
 		func_arg = NULL;
 		is_error = false;
-		is_value = false;
 	}
 
-	FuncDeclContext(FuncArg * func_arg, Error * error) : func_arg(func_arg), error(error), is_error(true)  
+	FuncArgDeclContext(FuncArg * func_arg, Error * error) : func_arg(func_arg), error(error), is_error(true)  
 	{
 		if(error == NULL)
 			is_error = false;
-
-		if(func_arg == NULL)
-			is_value = false;
 	}
 
 	FuncArg * get_func_arg()
@@ -43,10 +38,5 @@ public:
 	bool has_error()
 	{
 		return is_error;
-	}
-
-	bool has_value()
-	{
-		return is_value;
 	}
 };

@@ -55,6 +55,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitPrintLnFunctionCall(tlParser::PrintLnFunctionCallContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitIf_statement(tlParser::If_statementContext *ctx) override {
     return visitChildren(ctx);
   }

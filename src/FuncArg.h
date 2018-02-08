@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <string>
@@ -20,7 +19,7 @@ public:
 	{
 		return name;
 	}
-	
+
 	Type get_type()
 	{
 		return type;

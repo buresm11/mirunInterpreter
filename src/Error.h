@@ -1,21 +1,14 @@
-
 #pragma once
-
-#include "BoolObj.h"
 
 #include <string>
 
-class Error {
-
+class Error 
+{
 	int id;
 	std::string text;
 
 public:
-
-	Error(int id, std::string text) : id(id), text(text)
-	{
-
-	}
+	Error(int id, std::string text) : id(id), text(text) { }
 
 	std::string get_text()
 	{
@@ -26,6 +19,5 @@ public:
 	{
 		return id;
 	}
-
 };
 

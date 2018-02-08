@@ -1,15 +1,12 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
 #include <string>
-#include <map>
 
 #include "Obj.h"
 #include "Types.h"
 
-class ArrayObj : public Obj {
-
+class ArrayObj : public Obj 
+{
 	Obj ** value;
 	int array_size;
 	Type content_type;
@@ -35,5 +32,10 @@ public:
 	Type get_content_type()
 	{
 		return content_type;
+	}
+
+	Obj * copy()
+	{
+		return new ArrayObj(array_size, value, content_type);
 	}
 };

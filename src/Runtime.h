@@ -63,53 +63,60 @@ public:
 
 /// built-in functions
 
-	ContextValue * print(Obj * obj)
+	ContextValue * print(Obj * obj, bool newline)
 	{
-		if(obj->get_type() == IntType) return print((IntObj*)obj);
-        else if(obj->get_type() == StringType) return print((StringObj*)obj);
-        else if(obj->get_type() == BoolType) return print((BoolObj*)obj);
-        else if(obj->get_type() == ArrayType) return print((ArrayObj*)obj);
+		if(obj->get_type() == IntType) return print((IntObj*)obj, newline);
+        else if(obj->get_type() == StringType) return print((StringObj*)obj, newline);
+        else if(obj->get_type() == BoolType) return print((BoolObj*)obj, newline);
+        else if(obj->get_type() == ArrayType) return print((ArrayObj*)obj, newline);
         else 
         {
             return new ContextValue(NULL, new Error(13, "Unknow type"));
         }
 	}
 
-	ContextValue * print(IntObj* int_obj)
+	ContextValue * print(IntObj* int_obj, bool newline)
 	{
-		std::cout << "O:" << int_obj->get_value() << std::endl;
+		std::cout << int_obj->get_value();
+		if(newline)std::cout << std::endl;
 		return new ContextValue(int_obj, NULL);
 	}
 
-	ContextValue * print(StringObj* string_obj)
+	ContextValue * print(StringObj* string_obj, bool newline)
 	{
-		std::cout << "0:" << string_obj->get_value() << std::endl;
+		std::cout << string_obj->get_value();
+		if(newline)std::cout << std::endl;
 		return new ContextValue(string_obj, NULL);
 	}
 
-	ContextValue * print(BoolObj* bool_obj)
+	ContextValue * print(BoolObj* bool_obj, bool newline)
 	{
 		if(bool_obj->get_value())
 		{
-			std::cout << "0:" << "True" << std::endl;
+			std::cout << "True";
 		}
 		else
 		{
-			std::cout << "0:" << "False" << std::endl;
+			std::cout << "False";
 		}
+		if(newline)std::cout << std::endl;
 		
 		return new ContextValue(bool_obj, NULL);
 	}
 
-	ContextValue * print(ArrayObj* array_obj)
+	ContextValue * print(ArrayObj* array_obj, bool newline)
 	{
 		Obj ** array = array_obj->get_value();
 		int array_size = array_obj->get_array_size();
 
+		std::cout << "[";
 		for(int i=0; i<array_size; i++)
 		{
-			print(array[i]);
+			print(array[i], false);
+			if(i < array_size-1) std::cout << ",";
 		}
+		std::cout << "]";
+		if(newline)std::cout << std::endl;
 
 		return new ContextValue(array_obj, NULL);
 	}

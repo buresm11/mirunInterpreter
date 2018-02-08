@@ -12,10 +12,18 @@
 #include "BoolObj.h"
 #include "ArrayObj.h"
 #include "ContextValue.h"
-#include "FuncDeclContext.h"
+#include "FuncArgDeclContext.h"
 #include "Function.h"
 #include "FuncArg.h"
 #include "Scope.h"
+
+#define DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+#define Debug(x) std::cout << x;
+#else
+#define Debug(x) 
+#endif 
 
 class Runtime;
 
@@ -23,11 +31,18 @@ class Visitor : public tlVisitor
 {
     Runtime * runtime;
     Scope * scope;
+    FuncArg * func_return_type;
+
+    bool return_value_set;
+    ContextValue * context_return_value;
 
 public:
     Visitor(Runtime * runtime) : runtime(runtime)
     {
         scope = new Scope();
+        return_value_set = false;
+        context_return_value = NULL;
+        func_return_type = NULL;
     }
 
     Scope * get_scope()
@@ -37,24 +52,15 @@ public:
 
     antlrcpp::Any visitParse(tlParser::ParseContext *context)
     {
-        std::cout << "parse" << std::endl;
+        Debug(": parse" << std::endl);
 
         ContextValue * context_value = visit(context->top_block());
-
-        if(context_value->has_error())
-        {
-            std::cout << context_value->get_error()->get_text() << std::endl;
-        }
-
-        scope->current_environment()->show_variable();
-
-        ContextValue * return_value = new ContextValue();
-        return return_value;
+        return context_value;
     }
 
     antlrcpp::Any visitTop_block(tlParser::Top_blockContext *context)
     {
-        std::cout << "Top_block" << std::endl;
+        Debug(": top_block" << std::endl);
 
         for(int i=0; i < context->function_decl().size(); i++)
         {
@@ -66,32 +72,31 @@ public:
         for (int i=0; i < context->statement().size(); i++)
         {
             ContextValue * context_value = visit(context->statement().at(i));
-            if(context_value->has_error()) return context_value;
+            if(context_value->has_error() || context_value->has_done()) return context_value;
             else delete context_value;
         }
 
-        ContextValue * return_value = new ContextValue();
-        return return_value;
+        return new ContextValue();
     }
 
     antlrcpp::Any visitBlock(tlParser::BlockContext *context)
     {
-        std::cout << "block" << std::endl;
+        Debug(": block" << std::endl);
+
 
         for (int i=0; i < context->statement().size(); i++)
         {
             ContextValue * context_value = visit(context->statement().at(i));
-            if(context_value->has_error()) return context_value;
+            if(context_value->has_error() || context_value->has_done()) return context_value;
             else delete context_value;
         }
 
-        ContextValue * return_value = new ContextValue();
-        return return_value;
+        return new ContextValue();
     }
 
     antlrcpp::Any visitStatement(tlParser::StatementContext *context)
     {
-        std::cout << "statement" << std::endl;
+        Debug(": statement" << std::endl);
 
         ContextValue * context_value_statement = NULL;
 
@@ -115,61 +120,26 @@ public:
         {
             context_value_statement = visit(context->function_call());
         }
+        else if(context->return_statement() != NULL)
+        {
+            context_value_statement = visit(context->return_statement());
+        }
         else { /* Not possible */ }
 
         return context_value_statement;
     }
 
-    antlrcpp::Any visitReturn_statement(tlParser::Return_statementContext *context)
-    {
-
-    }
-
-    antlrcpp::Any visitAssignment(tlParser::AssignmentContext *context)
-    {
-        std::cout << "assignment" << std::endl;
-
-        ContextValue * context_value_expression = visit(context->expression());
-        if(context_value_expression->has_error())
-        {
-            return context_value_expression;
-        }
-
-        if(context->index() != NULL)
-        {
-            ContextValue * context_value_index = visit(context->index());
-            if(context_value_index->has_error()) 
-            {
-                return context_value_index;
-            }
-            else
-            {
-                return scope->current_environment()->set_array_variable(context->Identifier()->getText(), context_value_expression->get_obj(), 
-                                    ((IntObj *)context_value_index->get_obj())->get_value()); 
-            }
-        }
-        else
-        {
-            return scope->current_environment()->set_variable(context->Identifier()->getText(), context_value_expression->get_obj());  
-        }
-    }
-
     antlrcpp::Any visitVariable_def(tlParser::Variable_defContext *context)
     {
-        std::cout << "VariableDef" << std::endl;
+        Debug(": variable_def" << std::endl);
 
         if(context->index() != NULL)
         {
             ContextValue * context_value_index = visit(context->index());
-            if(context_value_index->has_error()) 
-            {
-                return context_value_index;
-            }
-            else
-            {
-                return new_array_variable_def(context->Type_identifier()->getText(), context->Identifier()->getText(),
-                                    ((IntObj *)context_value_index->get_obj())->get_value());
-            }
+            if(context_value_index->has_error()) return context_value_index; 
+
+            return new_array_variable_def(context->Type_identifier()->getText(), context->Identifier()->getText(),
+                                ((IntObj *)context_value_index->get_obj())->get_value());
         }
         else 
         {
@@ -179,6 +149,8 @@ public:
 
     ContextValue* new_variable_def(std::string type, std::string name)
     {
+        Debug(": new variable" << std::endl);
+
         Obj * var = NULL; 
 
         if(type.compare("string") == 0)
@@ -195,7 +167,7 @@ public:
         } 
         else
         {
-           return new ContextValue(NULL, new Error(1, "Unexpexted type " + type));
+           return new ContextValue(NULL, new Error(5, "Unexpexted type " + type));
         }
 
         return scope->current_environment()->create_variable(name, var);
@@ -203,13 +175,12 @@ public:
 
     ContextValue* new_array_variable_def(std::string type, std::string name, int index)
     {
+        Debug(": new array variable" << std::endl);
+
         if(index == 0)
         {
             return new ContextValue(NULL, new Error(6, "Cannon create array sized 0"));
         }
-
-        std::cout << index;
-
 
         Obj ** var = new Obj*[index];
         Type type_content;
@@ -241,7 +212,7 @@ public:
         } 
         else
         {
-           return new ContextValue(NULL, new Error(1, "Unexpexted type " + type));
+           return new ContextValue(NULL, new Error(5, "Unexpexted type " + type));
         }
 
         Obj * array_var = new ArrayObj(index, var, type_content);
@@ -250,9 +221,52 @@ public:
         return scope->current_environment()->create_variable(name, array_var);
     }
 
+    antlrcpp::Any visitReturn_statement(tlParser::Return_statementContext *context)
+    {
+        Debug(": return statement" << std::endl);
+
+        ContextValue * context_value_expression = visit(context->expression());
+        if(context_value_expression->has_error())
+        {
+            return context_value_expression;
+        }
+
+        Obj * return_value = context_value_expression->get_obj();
+        return new ContextValue(return_value, NULL, true);
+    }
+
+    antlrcpp::Any visitAssignment(tlParser::AssignmentContext *context)
+    {
+        Debug(": assignment" << std::endl);
+
+        ContextValue * context_value_expression = visit(context->expression());
+        if(context_value_expression->has_error())
+        {
+            return context_value_expression;
+        }
+
+        if(context->index() != NULL)
+        {
+            ContextValue * context_value_index = visit(context->index());
+            if(context_value_index->has_error()) 
+            {
+                return context_value_index;
+            }
+            else
+            {
+                return scope->current_environment()->set_array_variable(context->Identifier()->getText(), context_value_expression->get_obj(), 
+                                    ((IntObj *)context_value_index->get_obj())->get_value()); 
+            }
+        }
+        else
+        {
+            return scope->current_environment()->set_variable(context->Identifier()->getText(), context_value_expression->get_obj());  
+        }
+    }
+
     antlrcpp::Any visitPrintFunctionCall(tlParser::PrintFunctionCallContext *context)
     {
-        std::cout << "Print" << std::endl;
+        Debug(": print function" << std::endl);
 
         ContextValue * context_value_expression = visit(context->expression());
 
@@ -261,11 +275,27 @@ public:
             return context_value_expression;
         }
 
-        return runtime->print(context_value_expression->get_obj());
+        return runtime->print(context_value_expression->get_obj(), false);
+    }
+
+    antlrcpp::Any visitPrintLnFunctionCall(tlParser::PrintLnFunctionCallContext *context)
+    {
+        Debug(": println function" << std::endl);
+
+        ContextValue * context_value_expression = visit(context->expression());
+
+        if(context_value_expression->has_error())
+        {
+            return context_value_expression;
+        }
+
+        return runtime->print(context_value_expression->get_obj(), true);
     }
 
     antlrcpp::Any visitScanFunctionCall(tlParser::ScanFunctionCallContext *context)
     {
+        Debug(": scan function" << std::endl);
+
         if(context->index() != NULL)
         {
             ContextValue * context_value_index = visit(context->index());
@@ -284,7 +314,7 @@ public:
 
     antlrcpp::Any visitIdentifierFunctionCall(tlParser::IdentifierFunctionCallContext *context)
     {
-        std::cout << "func_Call" << std::endl;
+        Debug(": function" << std::endl);
 
         std::string name = context->Identifier()->getText();
         int args_size = context->expression().size();
@@ -315,12 +345,12 @@ public:
 
     antlrcpp::Any visitIf_statement(tlParser::If_statementContext *context)
     {
-        std::cout << "If_statement" << std::endl;
+        Debug(": if_statement" << std::endl);
 
         bool if_executed = false;
 
         ContextValue * context_value_if = visit(context->if_stat());
-        if(context_value_if->has_error())
+        if(context_value_if->has_error() || context_value_if->has_done())
         {
             return context_value_if;
         }
@@ -331,7 +361,7 @@ public:
             {
                ContextValue * context_value_else_if = visit(context->else_if_stat().at(i)); 
 
-               if(context_value_else_if->has_error())
+               if(context_value_else_if->has_error() || context_value_else_if->has_done())
                {
                     return context_value_else_if;
                }
@@ -350,12 +380,12 @@ public:
         }
         delete context_value_if;
 
-        if(!if_executed)
+        if(!if_executed && context->else_stat() != NULL)
         {
             ContextValue * context_value_else = visit(context->else_stat());
-            if(context_value_else->has_error())
+            if(context_value_else->has_error() || context_value_else->has_done())
             {
-                return context_value_if;
+                return context_value_else;
             }
             delete context_value_else;
         }
@@ -365,7 +395,7 @@ public:
 
     antlrcpp::Any visitIf_stat(tlParser::If_statContext *context)
     {
-        std::cout << "If_stat" << std::endl;
+        Debug(": if_stat" << std::endl);
 
         ContextValue * context_value_expression = visit(context->expression());
 
@@ -378,8 +408,7 @@ public:
         {
             scope->create_new_environment();
             ContextValue * contex_value_if_block = visit(context->block());
-            if(contex_value_if_block->has_error()) return contex_value_if_block;
-            scope->current_environment()->show_variable();
+            if(contex_value_if_block->has_error() || contex_value_if_block->has_done()) return contex_value_if_block;
             scope->remove_top_environment();
         }
 
@@ -388,7 +417,7 @@ public:
 
     antlrcpp::Any visitElse_if_stat(tlParser::Else_if_statContext *context)
     {
-        std::cout << "Else_if_stat" << std::endl;
+        Debug(": else_if_stat" << std::endl);
 
         ContextValue * context_value_expression = visit(context->expression());
 
@@ -401,8 +430,7 @@ public:
         {
             scope->create_new_environment();
             ContextValue * contex_value_else_if_block = visit(context->block());
-            if(contex_value_else_if_block->has_error()) return contex_value_else_if_block;
-            scope->current_environment()->show_variable();
+            if(contex_value_else_if_block->has_error() || contex_value_else_if_block->has_done()) return contex_value_else_if_block;
             scope->remove_top_environment();
         }
 
@@ -411,12 +439,11 @@ public:
 
     antlrcpp::Any visitElse_stat(tlParser::Else_statContext *context)
     {
-        std::cout << "Else_stat" << std::endl;
+        Debug(": else_stat" << std::endl);
 
         scope->create_new_environment();
         ContextValue * contex_value_else_block = visit(context->block());
-        if(contex_value_else_block->has_error()) return contex_value_else_block;
-        scope->current_environment()->show_variable();
+        if(contex_value_else_block->has_error() || contex_value_else_block->has_done()) return contex_value_else_block;
         scope->remove_top_environment();
 
         return new ContextValue();
@@ -424,9 +451,9 @@ public:
 
     antlrcpp::Any visitFunction_decl(tlParser::Function_declContext *context)
     {
-        std::cout << "Function_decl" << std::endl;
+        Debug(": func_decl" << std::endl);
 
-        FuncDeclContext * func_decl_context_type = visit(context->func_decl_type_arg());
+        FuncArgDeclContext * func_decl_context_type = visit(context->func_decl_type());
 
         if(func_decl_context_type->has_error())
         {
@@ -443,7 +470,7 @@ public:
         }
         else
         {
-           std::vector<FuncDeclContext*> func_decl_context_args = visit(context->func_decl_type_list());
+           std::vector<FuncArgDeclContext*> func_decl_context_args = visit(context->func_decl_type_list());
 
            FuncArg ** args = new FuncArg*[func_decl_context_args.size()]; 
 
@@ -463,13 +490,13 @@ public:
 
     antlrcpp::Any visitFunc_decl_type_list(tlParser::Func_decl_type_listContext *context)
     {
-        std::cout << "Func_decl_type_list" << std::endl;
+        Debug(": func_decl_type_list" << std::endl);
 
-        std::vector<FuncDeclContext *> func_decl_context_args;
+        std::vector<FuncArgDeclContext *> func_decl_context_args;
 
         for(int i=0; i< context->func_decl_type_arg().size(); i++)
         {
-            FuncDeclContext * func_decl_context_arg = visit(context->func_decl_type_arg().at(i));
+            FuncArgDeclContext * func_decl_context_arg = visit(context->func_decl_type_arg().at(i));
             func_decl_context_args.push_back(func_decl_context_arg);
         }
 
@@ -478,7 +505,7 @@ public:
 
     antlrcpp::Any visitFunc_decl_type_arg(tlParser::Func_decl_type_argContext *context)
     {
-        std::cout << "Func_decl_type_arg" << std::endl;
+        Debug(": func_decl_type_arg" << std::endl);
 
         if(context->func_decl_type() != NULL)
         {   
@@ -490,14 +517,13 @@ public:
         }
         else
         {
-            return new FuncDeclContext(NULL,new Error(14, "Syntax error"));
+            return new FuncArgDeclContext(NULL,new Error(14, "Syntax error"));
         }
     }
 
-
     antlrcpp::Any visitFunc_decl_type(tlParser::Func_decl_typeContext *context)
     {
-        std::cout << "Func_decl_type" << std::endl;
+        Debug(": func_decl_type" << std::endl);
 
         std::string type_string = context->Type_identifier()->getText();
 
@@ -516,16 +542,16 @@ public:
         }
         else
         {
-            return new FuncDeclContext(NULL, new Error(13, "Unknow type"));
+            return new FuncArgDeclContext(NULL, new Error(13, "Unknow type"));
         }
 
         FuncArg * func_arg = new FuncArg(context->Identifier()->getText(), false, arg_type);
-        return new FuncDeclContext(func_arg, NULL);
+        return new FuncArgDeclContext(func_arg, NULL);
     }
 
     antlrcpp::Any visitFunc_decl_array_type(tlParser::Func_decl_array_typeContext *context)
     {
-        std::cout << "Func_decl_array_type" << std::endl;
+        Debug(": func_decl_array_type" << std::endl);
 
         std::string type_string = context->Type_identifier()->getText();
 
@@ -544,62 +570,16 @@ public:
         }
         else
         {
-            return new FuncDeclContext(NULL, new Error(13, "Unknow type"));
+            return new FuncArgDeclContext(NULL, new Error(13, "Unknow type"));
         }
 
         FuncArg * func_arg = new FuncArg(context->Identifier()->getText(), true, arg_type);
-        return new FuncDeclContext(func_arg, NULL);
+        return new FuncArgDeclContext(func_arg, NULL);
     }
-
-    /*antlrcpp::Any visitFunc_arg_list_decl(tlParser::Func_arg_list_declContext *context)
-    {
-        std::cout << "Func_arg_list_decl" << std::endl;
-
-        for(int i=0;i<context->func_arg().size();i++)
-        {
-            FuncDeclContext * contex_value = visit(context->func_arg().at(1));
-        }
-
-        return new FuncDeclContext();
-    }
-
-    antlrcpp::Any visitFunc_arg(tlParser::Func_argContext *context)
-    {
-        std::cout << "Func_arg" << std::endl;
-
-        std::string name = context->Identifier()->getText();
-        std::string type_string = context->Type_identifier()->getText();
-
-        if(context->arrayDecl() == NULL)
-        {
-            std::cout << "cx" << std::endl ;
-        }
-
-        Type arg_type;
-
-        if(type_string.compare("string") == 0)
-        {
-            arg_type = StringType;
-        }
-        else if(type_string.compare("int") == 0)
-        {
-            arg_type = IntType;
-        }
-        else if(type_string.compare("bool") == 0)
-        {
-            arg_type = BoolType;
-        }
-        else
-        {
-            return new FuncDeclContext(NULL, new Error(13, "Unknow type"));
-        }
-
-        return new FuncDeclContext(new FuncArg(name, arg_type), NULL);
-    }*/
 
     antlrcpp::Any visitWhile_statement(tlParser::While_statementContext *context)
     {
-        std::cout << "while" << std::endl;
+        Debug(": while_statement" << std::endl);
 
         while(true)
         {
@@ -615,41 +595,64 @@ public:
             {
                 scope->create_new_environment();
                 ContextValue * contex_value_else_block = visit(context->block());
-                if(contex_value_else_block->has_error()) return contex_value_else_block;
-                scope->current_environment()->show_variable();
+                if(contex_value_else_block->has_error() || contex_value_else_block->has_done()) return contex_value_else_block;
                 scope->remove_top_environment();
             }
         }
         return new ContextValue();
     }
 
-    antlrcpp::Any visitIndex(tlParser::IndexContext *context)
+    antlrcpp::Any visitFunctionCallExpression(tlParser::FunctionCallExpressionContext *context)
     {
-        std::cout << "Index" << std::endl;
+        Debug(": function_call_expression" << std::endl);
 
-        ContextValue * context_value_expression = visit(context->expression());
+        ContextValue * func_call_context_value = visit(context->function_call());
 
-        if(context_value_expression->has_error())
+        if(func_call_context_value->has_error())
         {
-            return context_value_expression;
+            return func_call_context_value;
         }
-        else
+
+        if(context->index() != NULL)
         {
-            if(context_value_expression->get_obj()->get_type() == IntType)
+            ContextValue * context_value_index = visit(context->index());
+            if(context_value_index->has_error()) 
             {
-                return context_value_expression;
+                return context_value_index;
             }
             else
             {
-                delete context_value_expression;
-                return new ContextValue(NULL ,new Error(3, "Index is not a number"));
+                Obj * returned_obj = func_call_context_value->get_obj();
+                if(returned_obj->get_type() == ArrayType)
+                {
+                    int index = ((IntObj *)context_value_index->get_obj())->get_value();
+                    Obj ** array = ((ArrayObj*)returned_obj)->get_value();
+                    int array_size = ((ArrayObj*)returned_obj)->get_array_size();
+
+                    if(index > 0 && index < array_size)
+                    {
+                        return array[index];
+                    }
+                    else
+                    {
+                        // not in
+                    }
+                }
+                else
+                {
+                    // error
+                }
             }
+        }
+        else
+        {
+            return func_call_context_value;  
         }
     }
 
     antlrcpp::Any visitIdentifierExpression(tlParser::IdentifierExpressionContext *context)
     {
-        std::cout << "identifier" << std::endl;
+        Debug(": identifier" << std::endl);
 
         if(context->index() != NULL)
         {
@@ -670,14 +673,83 @@ public:
         }
     }
 
-    antlrcpp::Any visitFunctionCallExpression(tlParser::FunctionCallExpressionContext *context)
+    antlrcpp::Any visitIndex(tlParser::IndexContext *context)
     {
+        Debug(": index" << std::endl);
 
+        ContextValue * context_value_expression = visit(context->expression());
+
+        if(context_value_expression->has_error())
+        {
+            return context_value_expression;
+        }
+        else
+        {
+            if(context_value_expression->get_obj()->get_type() == IntType)
+            {
+                return context_value_expression;
+            }
+            else
+            {
+                delete context_value_expression->get_obj();
+                delete context_value_expression;
+                return new ContextValue(NULL, new Error(4, "Index is not a number"));
+            }
+        }
+    }
+
+    antlrcpp::Any visitNumberExpression(tlParser::NumberExpressionContext *context)
+    {
+        Debug(": number_expression" << std::endl);
+
+        int number;
+
+        try
+        {
+            number = std::stoi(context->Number()->getText());
+        }
+        catch(std::invalid_argument & e)
+        { 
+            return new ContextValue(NULL, new Error(1, "Unknown number"));
+        }
+        catch(std::out_of_range & e)
+        {
+            return new ContextValue(NULL, new Error(2, "Integer out of range"));
+        }
+
+        Obj * obj = new IntObj(number);
+        return new ContextValue(obj, NULL);
+    }
+
+    antlrcpp::Any visitStringExpression(tlParser::StringExpressionContext *context)
+    {
+        Debug(": string_expression" << std::endl);
+
+        std::string string = context->String()->getText().substr(1, context->String()->getText().size() -2 );
+        return new ContextValue(new StringObj(string), NULL);
+    }
+
+    antlrcpp::Any visitBoolExpression(tlParser::BoolExpressionContext *context)
+    {
+        Debug(": bool_expression" << std::endl);
+
+        bool value;
+        if(context->Bool()->getText().compare("true") == 0) 
+        {
+            value = true;
+        }
+        else
+        {
+            value = false;
+        }
+
+        Obj * obj = new BoolObj(value);
+        return new ContextValue(obj, NULL);
     }
 
     antlrcpp::Any visitLtExpression(tlParser::LtExpressionContext *context)
     {
-        std::cout << "LtExpression" << std::endl;
+        Debug(": lt_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -687,26 +759,18 @@ public:
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
-
             Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() < ((IntObj*)(contex_value_r->get_obj()))->get_value());
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator < unsupported types" ));
         }
     }
 
     antlrcpp::Any visitGtExpression(tlParser::GtExpressionContext *context)
     {
-        std::cout << "LtEqExpression" << std::endl;
+        Debug(": gt_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -721,35 +785,13 @@ public:
         }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator > unsupported types" ));
         }
-    }
-
-    antlrcpp::Any visitBoolExpression(tlParser::BoolExpressionContext *context)
-    {
-        std::cout << "bool" << std::endl;
-
-        bool value;
-        if(context->Bool()->getText().compare("true") == 0) 
-        {
-            value = true;
-        }
-        else value = false;
-
-        Obj * obj = new BoolObj(value);
-        return new ContextValue(obj, NULL);
     }
 
     antlrcpp::Any visitNotEqExpression(tlParser::NotEqExpressionContext *context)
     {
-        std::cout << "EqExpression" << std::endl;
+        Debug(": not_eq_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -774,41 +816,13 @@ public:
         }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator != unsupported types" ));
         }
-    }
-
-    antlrcpp::Any visitNumberExpression(tlParser::NumberExpressionContext *context)
-    {
-        int number;
-
-        try
-        {
-            number = std::stoi(context->Number()->getText());
-        }
-        catch(std::invalid_argument & e)
-        { 
-            return new ContextValue(NULL, new Error(4, "unknown number"));
-        }
-        catch(std::out_of_range & e)
-        {
-            return new ContextValue(NULL, new Error(5, "int out of range"));
-        }
-
-        Obj * obj = new IntObj(number);
-        return new ContextValue(obj, NULL);
     }
 
     antlrcpp::Any visitModulusExpression(tlParser::ModulusExpressionContext *context)
     {
-        std::cout << "ModulusExpression" << std::endl;
+        Debug(": modulus_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -818,26 +832,18 @@ public:
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
-
             Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() % ((IntObj*)(contex_value_r->get_obj()))->get_value());
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator % unsupported types" ));
         }
     }
 
     antlrcpp::Any visitNotExpression(tlParser::NotExpressionContext *context)
     {
-        std::cout << "NotExpression" << std::endl;
+        Debug(": not_expression" << std::endl);
 
         ContextValue* contex_value = visit(context->expression());
         if(contex_value->has_error()) return contex_value;
@@ -849,13 +855,13 @@ public:
         }
         else 
         {
-            return new ContextValue(NULL, new Error(12, "operation do not supperted"));
+            return new ContextValue(NULL, new Error(3, "Operator ! unsupported types" ));
         }
     }
 
     antlrcpp::Any visitMultiplyExpression(tlParser::MultiplyExpressionContext *context)
     {
-        std::cout << "MultiplyExpression" << std::endl;
+        Debug(": multiply_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -870,20 +876,13 @@ public:
         }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator * unsupported types" ));
         }
     }
 
     antlrcpp::Any visitGtEqExpression(tlParser::GtEqExpressionContext *context)
     {
-        std::cout << "GtEqExpression" << std::endl;
+        Debug(": gt_eq_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -898,20 +897,13 @@ public:
         }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator >= unsupported types" ));
         }
     }
 
     antlrcpp::Any visitDivideExpression(tlParser::DivideExpressionContext *context)
     {
-        std::cout << "DivideExpression" << std::endl;
+        Debug(": divide_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -921,26 +913,18 @@ public:
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
-
             Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() / ((IntObj*)(contex_value_r->get_obj()))->get_value());
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator / unsupported types" ));
         }
     }
 
     antlrcpp::Any visitOrExpression(tlParser::OrExpressionContext *context)
     {
-        std::cout << "OrExpression" << std::endl;
+        Debug(": or_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -955,20 +939,13 @@ public:
         }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator || unsupported types" ));
         }
     }
 
     antlrcpp::Any visitUnaryMinusExpression(tlParser::UnaryMinusExpressionContext *context)
     {
-        std::cout << "UnaryMinusExpression" << std::endl;
+        Debug(": unary_minus_expression" << std::endl);
 
         ContextValue* contex_value = visit(context->expression());
         if(contex_value->has_error()) return contex_value;
@@ -980,13 +957,13 @@ public:
         }
         else 
         {
-            return new ContextValue(NULL, new Error(12, "operation do not supperted"));
+            return new ContextValue(NULL, new Error(3, "Operator - unsupported types" ));
         }
     }
 
     antlrcpp::Any visitEqExpression(tlParser::EqExpressionContext *context)
     {
-        std::cout << "EqExpression" << std::endl;
+        Debug(": eq_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -1013,20 +990,13 @@ public:
         }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator == unsupported types" ));
         }
     }
 
     antlrcpp::Any visitAndExpression(tlParser::AndExpressionContext *context)
     {
-        std::cout << "AndExpression" << std::endl;
+        Debug(": and_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -1041,26 +1011,13 @@ public:
         }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator && unsupported types" ));
         }
-    }
-
-    antlrcpp::Any visitStringExpression(tlParser::StringExpressionContext *context)
-    {
-        std::string string = context->String()->getText().substr(1, context->String()->getText().size() -2 );
-        return new ContextValue(new StringObj(string), NULL);
     }
 
     antlrcpp::Any visitAddExpression(tlParser::AddExpressionContext *context)
     {
-        std::cout << "AddExpression" << std::endl;
+        Debug(": add_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -1073,22 +1030,20 @@ public:
             Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() + ((IntObj*)(contex_value_r->get_obj()))->get_value());
             return new ContextValue(return_obj, NULL);
         }
+        if(contex_value_l->get_obj()->get_type() == StringType && contex_value_r->get_obj()->get_type() == StringType)
+        {
+            Obj * return_obj = new StringObj(((StringObj*)(contex_value_l->get_obj()))->get_value() + ((StringObj*)(contex_value_r->get_obj()))->get_value());
+            return new ContextValue(return_obj, NULL);
+        }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator + unsupported types" ));
         }
     }
 
     antlrcpp::Any visitSubtractExpression(tlParser::SubtractExpressionContext *context)
     {
-        std::cout << "SubtractExpression" << std::endl;
+        Debug(": substract_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -1103,20 +1058,13 @@ public:
         }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator - unsupported types" ));
         }
     }
 
     antlrcpp::Any visitLtEqExpression(tlParser::LtEqExpressionContext *context)
     {
-        std::cout << "LtEqExpression" << std::endl;
+        Debug(": lt_eq_expression" << std::endl);
 
         ContextValue* contex_value_l = visit(context->expression().at(0));
         if(contex_value_l->has_error()) return contex_value_l;
@@ -1131,14 +1079,7 @@ public:
         }
         else 
         {
-            if(contex_value_l->get_obj()->get_type() != contex_value_r->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(11, "types do not match"));
-            } 
-            else
-            {
-                return new ContextValue(NULL, new Error(12, "operation do not supperted"));
-            }
+            return new ContextValue(NULL, new Error(3, "Operator <= unsupported types" ));
         }
     }
 };

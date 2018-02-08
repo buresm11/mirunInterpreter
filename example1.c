@@ -1,11 +1,8 @@
 
-def int y()
-	int a;
-	int b;
-	a =4;
-	b = 8;
+int x;
+int y;
 
-	print(a+b)
-end
+x = 20;
+y = 5;
 
-y();
+print(x % "545");

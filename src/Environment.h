@@ -65,7 +65,6 @@ public:
 		{
 			return new ContextValue(obj, NULL);
 		}
-
 	}
 
 	ContextValue* set_variable(std::string name, Obj * obj) {
@@ -160,8 +159,8 @@ public:
 		else 
 		{
 			if(it->second->get_type() == ArrayType)
-				return new ContextValue(it->second, NULL);
-			else 
+				return new ContextValue(it->second->copy(), NULL);
+			else
 				return new ContextValue(it->second->copy(), NULL);
 		}
 	}
