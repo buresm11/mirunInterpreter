@@ -138,8 +138,10 @@ public:
             ContextValue * context_value_index = visit(context->index());
             if(context_value_index->has_error()) return context_value_index; 
 
-            return new_array_variable_def(context->Type_identifier()->getText(), context->Identifier()->getText(),
-                                ((IntObj *)context_value_index->get_obj())->get_value());
+            int index = ((IntObj *)context_value_index->get_obj())->get_value();
+            delete_expression(context_value_index);
+
+            return new_array_variable_def(context->Type_identifier()->getText(), context->Identifier()->getText(), index);
         }
         else 
         {
@@ -221,20 +223,6 @@ public:
         return scope->current_environment()->create_variable(name, array_var);
     }
 
-    antlrcpp::Any visitReturn_statement(tlParser::Return_statementContext *context)
-    {
-        Debug(": return statement" << std::endl);
-
-        ContextValue * context_value_expression = visit(context->expression());
-        if(context_value_expression->has_error())
-        {
-            return context_value_expression;
-        }
-
-        Obj * return_value = context_value_expression->get_obj();
-        return new ContextValue(return_value, NULL, true);
-    }
-
     antlrcpp::Any visitAssignment(tlParser::AssignmentContext *context)
     {
         Debug(": assignment" << std::endl);
@@ -248,15 +236,12 @@ public:
         if(context->index() != NULL)
         {
             ContextValue * context_value_index = visit(context->index());
-            if(context_value_index->has_error()) 
-            {
-                return context_value_index;
-            }
-            else
-            {
-                return scope->current_environment()->set_array_variable(context->Identifier()->getText(), context_value_expression->get_obj(), 
-                                    ((IntObj *)context_value_index->get_obj())->get_value()); 
-            }
+            if(context_value_index->has_error()) return context_value_index; 
+
+            int index = ((IntObj *)context_value_index->get_obj())->get_value();
+            delete_expression(context_value_index);
+
+            return scope->current_environment()->set_array_variable(context->Identifier()->getText(), context_value_expression->get_obj(), index); 
         }
         else
         {
@@ -264,90 +249,9 @@ public:
         }
     }
 
-    antlrcpp::Any visitPrintFunctionCall(tlParser::PrintFunctionCallContext *context)
-    {
-        Debug(": print function" << std::endl);
-
-        ContextValue * context_value_expression = visit(context->expression());
-
-        if(context_value_expression->has_error())
-        {
-            return context_value_expression;
-        }
-
-        return runtime->print(context_value_expression->get_obj(), false);
-    }
-
-    antlrcpp::Any visitPrintLnFunctionCall(tlParser::PrintLnFunctionCallContext *context)
-    {
-        Debug(": println function" << std::endl);
-
-        ContextValue * context_value_expression = visit(context->expression());
-
-        if(context_value_expression->has_error())
-        {
-            return context_value_expression;
-        }
-
-        return runtime->print(context_value_expression->get_obj(), true);
-    }
-
-    antlrcpp::Any visitScanFunctionCall(tlParser::ScanFunctionCallContext *context)
-    {
-        Debug(": scan function" << std::endl);
-
-        if(context->index() != NULL)
-        {
-            ContextValue * context_value_index = visit(context->index());
-            if(context_value_index->has_error()) 
-            {
-                return context_value_index;
-            }
-            else
-            {
-                return runtime->scan(context->Identifier()->getText(), ((IntObj *)context_value_index->get_obj())->get_value(), scope);
-            }
-        }
-
-        return runtime->scan(context->Identifier()->getText(), scope);
-    }
-
-    antlrcpp::Any visitIdentifierFunctionCall(tlParser::IdentifierFunctionCallContext *context)
-    {
-        Debug(": function" << std::endl);
-
-        std::string name = context->Identifier()->getText();
-        int args_size = context->expression().size();
-
-        Obj ** args = new Obj*[args_size];
-
-        for(int i=0;i< args_size; i++)
-        {
-            ContextValue * context_value_expression = visit(context->expression().at(i));
-            if(context_value_expression->has_error()) 
-            {
-                for(int i=0;i< args_size; i++)
-                {
-                    delete args[i];
-                }
-                delete args;
-
-                return context_value_expression;
-            }
-            else
-            {
-                args[i] = context_value_expression->get_obj();
-            }
-        }
-
-        return runtime->invoke_function(name, args, args_size);
-    }
-
     antlrcpp::Any visitIf_statement(tlParser::If_statementContext *context)
     {
         Debug(": if_statement" << std::endl);
-
-        bool if_executed = false;
 
         ContextValue * context_value_if = visit(context->if_stat());
         if(context_value_if->has_error() || context_value_if->has_done())
@@ -357,7 +261,8 @@ public:
 
         if(!((BoolObj*)context_value_if->get_obj())->get_value())
         {
-            for(int i=0;i < context->else_if_stat().size(); i++)
+            delete_expression(context_value_if);
+            for(int i=0; i < context->else_if_stat().size(); i++)
             {
                ContextValue * context_value_else_if = visit(context->else_if_stat().at(i)); 
 
@@ -365,31 +270,30 @@ public:
                {
                     return context_value_else_if;
                }
+
                if(((BoolObj*)context_value_else_if->get_obj())->get_value())
                {
-                    delete context_value_else_if;
-                    if_executed = true;
-                    break; 
+                    delete_expression(context_value_else_if);
+                    return new ContextValue();
                }
-               else delete context_value_else_if;
+               else delete_expression(context_value_else_if);
             }
         }
         else
         {
-            if_executed = true;
+            delete_expression(context_value_if);
+            return new ContextValue();
         }
-        delete context_value_if;
 
-        if(!if_executed && context->else_stat() != NULL)
+        if(context->else_stat() != NULL)
         {
             ContextValue * context_value_else = visit(context->else_stat());
             if(context_value_else->has_error() || context_value_else->has_done())
             {
                 return context_value_else;
             }
-            delete context_value_else;
+            delete context_value_else; 
         }
-
         return new ContextValue();
     }
 
@@ -404,14 +308,23 @@ public:
             return context_value_expression;
         }
 
+        if(context_value_expression->get_obj()->get_type() != BoolType)
+        {
+            delete_expression(context_value_expression);
+            return new ContextValue(NULL, new Error(12, "If Condition is not bool"));
+        }
+
         if(((BoolObj*)context_value_expression->get_obj())->get_value())
         {
             scope->create_new_environment();
             ContextValue * contex_value_if_block = visit(context->block());
-            if(contex_value_if_block->has_error() || contex_value_if_block->has_done()) return contex_value_if_block;
             scope->remove_top_environment();
+            if(contex_value_if_block->has_error() || contex_value_if_block->has_done())
+            {
+                return contex_value_if_block;
+            } 
+            
         }
-
         return context_value_expression;
     }
 
@@ -426,14 +339,22 @@ public:
             return context_value_expression;
         }
 
+        if(context_value_expression->get_obj()->get_type() != BoolType)
+        {
+            delete_expression(context_value_expression);
+            return new ContextValue(NULL, new Error(12, "If Condition is not bool"));
+        }
+
         if(((BoolObj*)context_value_expression->get_obj())->get_value())
         {
             scope->create_new_environment();
             ContextValue * contex_value_else_if_block = visit(context->block());
-            if(contex_value_else_if_block->has_error() || contex_value_else_if_block->has_done()) return contex_value_else_if_block;
             scope->remove_top_environment();
+            if(contex_value_else_if_block->has_error() || contex_value_else_if_block->has_done()) 
+            {
+                return contex_value_else_if_block;
+            }
         }
-
         return context_value_expression;
     }
 
@@ -443,9 +364,45 @@ public:
 
         scope->create_new_environment();
         ContextValue * contex_value_else_block = visit(context->block());
-        if(contex_value_else_block->has_error() || contex_value_else_block->has_done()) return contex_value_else_block;
         scope->remove_top_environment();
+        if(contex_value_else_block->has_error() || contex_value_else_block->has_done())
+        {
+            return contex_value_else_block;
+        }
+        return new ContextValue();
+    }
 
+    antlrcpp::Any visitWhile_statement(tlParser::While_statementContext *context)
+    {
+        Debug(": while_statement" << std::endl);
+
+        while(true)
+        {
+            ContextValue * context_value_expression = visit(context->expression());
+
+            if(context_value_expression->has_error())
+            {
+                return context_value_expression;
+            }
+
+            if(context_value_expression->get_obj()->get_type() != BoolType)
+            {
+                delete_expression(context_value_expression);
+                return new ContextValue(NULL, new Error(12, "If Condition is not bool"));
+            }
+
+            if(!((BoolObj*)context_value_expression->get_obj())->get_value()) break;
+            else
+            {
+                scope->create_new_environment();
+                ContextValue * contex_value_else_block = visit(context->block());
+                scope->remove_top_environment();
+                if(contex_value_else_block->has_error() || contex_value_else_block->has_done())
+                {
+                    return contex_value_else_block;
+                }
+            }
+        }
         return new ContextValue();
     }
 
@@ -457,7 +414,7 @@ public:
 
         if(func_decl_context_type->has_error())
         {
-             //error 
+             return ContextValue(NULL, new Error(func_decl_context_type->get_error()->get_id(), func_decl_context_type->get_error()->get_text()));
         }
 
         std::string name = func_decl_context_type->get_func_arg()->get_name();
@@ -471,20 +428,25 @@ public:
         else
         {
            std::vector<FuncArgDeclContext*> func_decl_context_args = visit(context->func_decl_type_list());
-
            FuncArg ** args = new FuncArg*[func_decl_context_args.size()]; 
 
            for(int i=0; i< func_decl_context_args.size(); i++)
            {
                 if(func_decl_context_args.at(i)->has_error())
                 {
-                    //handle error and delete
+                    for(int j=0;j<func_decl_context_args.size();j++)
+                    {
+                        delete func_decl_context_args.at(j)->get_func_arg();
+                        delete func_decl_context_args.at(j);
+                    }
+                    delete args;
+
+                    return ContextValue(NULL, new Error(func_decl_context_args.at(i)->get_error()->get_id(), func_decl_context_args.at(i)->get_error()->get_text()));
                 }
                 args[i] = func_decl_context_args.at(i)->get_func_arg();
             }
             function = new Function(context->block(), return_type, args, func_decl_context_args.size());
         }
-
         return runtime->create_new_function(name, function);
     }
 
@@ -517,7 +479,7 @@ public:
         }
         else
         {
-            return new FuncArgDeclContext(NULL,new Error(14, "Syntax error"));
+            return new FuncArgDeclContext(NULL, new Error(14, "Syntax error"));
         }
     }
 
@@ -542,7 +504,7 @@ public:
         }
         else
         {
-            return new FuncArgDeclContext(NULL, new Error(13, "Unknow type"));
+            return new FuncArgDeclContext(NULL, new Error(13, "Unknown type"));
         }
 
         FuncArg * func_arg = new FuncArg(context->Identifier()->getText(), false, arg_type);
@@ -570,37 +532,121 @@ public:
         }
         else
         {
-            return new FuncArgDeclContext(NULL, new Error(13, "Unknow type"));
+            return new FuncArgDeclContext(NULL, new Error(13, "Unknown type"));
         }
 
         FuncArg * func_arg = new FuncArg(context->Identifier()->getText(), true, arg_type);
         return new FuncArgDeclContext(func_arg, NULL);
     }
 
-    antlrcpp::Any visitWhile_statement(tlParser::While_statementContext *context)
+    antlrcpp::Any visitPrintFunctionCall(tlParser::PrintFunctionCallContext *context)
     {
-        Debug(": while_statement" << std::endl);
+        Debug(": print function" << std::endl);
 
-        while(true)
+        ContextValue * context_value_expression = visit(context->expression());
+
+        if(context_value_expression->has_error())
         {
-            ContextValue * context_value_expression = visit(context->expression());
-
-            if(context_value_expression->has_error())
-            {
-                return context_value_expression;
-            }
-
-            if(!((BoolObj*)context_value_expression->get_obj())->get_value()) break;
-            else
-            {
-                scope->create_new_environment();
-                ContextValue * contex_value_else_block = visit(context->block());
-                if(contex_value_else_block->has_error() || contex_value_else_block->has_done()) return contex_value_else_block;
-                scope->remove_top_environment();
-            }
+            return context_value_expression;
         }
+
+        ContextValue * context_value_print = runtime->print(context_value_expression->get_obj(), false);
+
+        if(context_value_print->has_error())
+        {
+            return context_value_print;
+        }
+
+        delete_expression(context_value_expression);
+        delete context_value_print;
         return new ContextValue();
     }
+
+    antlrcpp::Any visitPrintLnFunctionCall(tlParser::PrintLnFunctionCallContext *context)
+    {
+        Debug(": print function" << std::endl);
+
+        ContextValue * context_value_expression = visit(context->expression());
+
+        if(context_value_expression->has_error())
+        {
+            return context_value_expression;
+        }
+
+        ContextValue * context_value_print = runtime->print(context_value_expression->get_obj(), true);
+
+        if(context_value_print->has_error())
+        {
+            return context_value_print;
+        }
+
+        delete_expression(context_value_expression);
+        delete context_value_print;
+        return new ContextValue();
+    }
+
+    antlrcpp::Any visitScanFunctionCall(tlParser::ScanFunctionCallContext *context)
+    {
+        Debug(": scan function" << std::endl);
+
+        if(context->index() != NULL)
+        {
+            ContextValue * context_value_index = visit(context->index());
+            if(context_value_index->has_error()) return context_value_index;
+
+            int index = ((IntObj *)context_value_index->get_obj())->get_value();
+            delete_expression(context_value_index);            
+
+            return runtime->scan(context->Identifier()->getText(), index, scope);
+        }
+
+        return runtime->scan(context->Identifier()->getText(), scope);
+    }
+
+    antlrcpp::Any visitIdentifierFunctionCall(tlParser::IdentifierFunctionCallContext *context)
+    {
+        Debug(": function" << std::endl);
+
+        std::string name = context->Identifier()->getText();
+        int args_size = context->expression().size();
+
+        Obj ** args = new Obj*[args_size];
+
+        for(int i=0;i< args_size; i++)
+        {
+            ContextValue * context_value_expression = visit(context->expression().at(i));
+            if(context_value_expression->has_error()) 
+            {
+                for(int i=0;i< args_size; i++)
+                {
+                    delete args[i];
+                }
+                delete args;
+
+                return context_value_expression;
+            }
+            else
+            {
+                args[i] = context_value_expression->get_obj();
+            }
+        }
+        return runtime->invoke_function(name, args, args_size);
+    }
+
+    antlrcpp::Any visitReturn_statement(tlParser::Return_statementContext *context)
+    {
+        Debug(": return statement" << std::endl);
+
+        ContextValue * context_value_expression = visit(context->expression());
+        if(context_value_expression->has_error())
+        {
+            return context_value_expression;
+        }
+
+        Obj * return_value = context_value_expression->get_obj();
+        return new ContextValue(return_value, NULL, true);
+    }
+
 
     antlrcpp::Any visitFunctionCallExpression(tlParser::FunctionCallExpressionContext *context)
     {
@@ -615,7 +661,7 @@ public:
 
         if(context->index() != NULL)
         {
-            ContextValue * context_value_index = visit(context->index());
+            ContextValue * context_value_index = visit(context->index()); //delete index
             if(context_value_index->has_error()) 
             {
                 return context_value_index;
@@ -657,15 +703,12 @@ public:
         if(context->index() != NULL)
         {
             ContextValue * context_value_index = visit(context->index());
-            if(context_value_index->has_error()) 
-            {
-                return context_value_index;
-            }
-            else
-            {
-                return scope->current_environment()->look_up_array_variable(context->Identifier()->getText(), 
-                    ((IntObj *)context_value_index->get_obj())->get_value()); 
-            }
+            if(context_value_index->has_error()) return context_value_index;
+            
+            int index = ((IntObj *)context_value_index->get_obj())->get_value();
+            delete_expression(context_value_index);
+
+            return scope->current_environment()->look_up_array_variable(context->Identifier()->getText(), index); 
         }
         else
         {
@@ -755,15 +798,21 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error())
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r;
+        }
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
             Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() < ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator < unsupported types" ));
         }
     }
@@ -776,15 +825,21 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error())
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r;
+        }
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
             Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() > ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator > unsupported types" ));
         }
     }
@@ -797,25 +852,33 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error()) 
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r;
+        }
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
             Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() != ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         if(contex_value_l->get_obj()->get_type() == StringType && contex_value_r->get_obj()->get_type() == StringType)
         {
             Obj * return_obj = new BoolObj(((StringObj*)(contex_value_l->get_obj()))->get_value() != ((StringObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         if(contex_value_l->get_obj()->get_type() == BoolType && contex_value_r->get_obj()->get_type() == BoolType)
         {
             Obj * return_obj = new BoolObj(((BoolObj*)(contex_value_l->get_obj()))->get_value() != ((BoolObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator != unsupported types" ));
         }
     }
@@ -828,15 +891,21 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error())
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r;
+        }
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
             Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() % ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator % unsupported types" ));
         }
     }
@@ -851,10 +920,12 @@ public:
         if(contex_value->get_obj()->get_type() == BoolType)
         {
             Obj * return_obj = new BoolObj(!((BoolObj*)(contex_value->get_obj()))->get_value());
+            delete_expression(contex_value);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expression(contex_value);
             return new ContextValue(NULL, new Error(3, "Operator ! unsupported types" ));
         }
     }
@@ -867,15 +938,21 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error())
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r;
+        }
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
             Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() * ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator * unsupported types" ));
         }
     }
@@ -888,15 +965,21 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error())
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r;
+        }
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
             Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() >= ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator >= unsupported types" ));
         }
     }
@@ -909,15 +992,21 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error()) 
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r;
+        }
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
             Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() / ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator / unsupported types" ));
         }
     }
@@ -930,15 +1019,21 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error())
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r;
+        }
 
         if(contex_value_l->get_obj()->get_type() == BoolType && contex_value_r->get_obj()->get_type() == BoolType)
         {
             Obj * return_obj = new BoolObj(((BoolObj*)(contex_value_l->get_obj()))->get_value() || ((BoolObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator || unsupported types" ));
         }
     }
@@ -953,10 +1048,12 @@ public:
         if(contex_value->get_obj()->get_type() == IntType)
         {
             Obj * return_obj = new IntObj(-((IntObj*)(contex_value->get_obj()))->get_value());
+            delete_expression(contex_value);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expression(contex_value);
             return new ContextValue(NULL, new Error(3, "Operator - unsupported types" ));
         }
     }
@@ -969,27 +1066,35 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error())
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r;
+        } 
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
             Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() == ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         if(contex_value_l->get_obj()->get_type() == StringType && contex_value_r->get_obj()->get_type() == StringType)
         {
 
             Obj * return_obj = new BoolObj(((StringObj*)(contex_value_l->get_obj()))->get_value() == ((StringObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         if(contex_value_l->get_obj()->get_type() == BoolType && contex_value_r->get_obj()->get_type() == BoolType)
         {
 
             Obj * return_obj = new BoolObj(((BoolObj*)(contex_value_l->get_obj()))->get_value() == ((BoolObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator == unsupported types" ));
         }
     }
@@ -1002,15 +1107,21 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error())
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r;
+        }
 
         if(contex_value_l->get_obj()->get_type() == BoolType && contex_value_r->get_obj()->get_type() == BoolType)
         {
             Obj * return_obj = new BoolObj(((BoolObj*)(contex_value_l->get_obj()))->get_value() && ((BoolObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator && unsupported types" ));
         }
     }
@@ -1023,20 +1134,27 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error())
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r; 
+        } 
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
             Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() + ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         if(contex_value_l->get_obj()->get_type() == StringType && contex_value_r->get_obj()->get_type() == StringType)
         {
             Obj * return_obj = new StringObj(((StringObj*)(contex_value_l->get_obj()))->get_value() + ((StringObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator + unsupported types" ));
         }
     }
@@ -1049,15 +1167,21 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error()) 
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r;
+        }
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
             Obj * return_obj = new IntObj(((IntObj*)(contex_value_l->get_obj()))->get_value() - ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator - unsupported types" ));
         }
     }
@@ -1070,16 +1194,37 @@ public:
         if(contex_value_l->has_error()) return contex_value_l;
 
         ContextValue* contex_value_r = visit(context->expression().at(1));
-        if(contex_value_l->has_error()) return contex_value_r;
+        if(contex_value_r->has_error()) 
+        {
+            delete_expression(contex_value_l);
+            return contex_value_r;
+        }
 
         if(contex_value_l->get_obj()->get_type() == IntType && contex_value_r->get_obj()->get_type() == IntType)
         {
             Obj * return_obj = new BoolObj(((IntObj*)(contex_value_l->get_obj()))->get_value() <= ((IntObj*)(contex_value_r->get_obj()))->get_value());
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(return_obj, NULL);
         }
         else 
         {
+            delete_expressions(contex_value_l, contex_value_r);
             return new ContextValue(NULL, new Error(3, "Operator <= unsupported types" ));
         }
     }
+
+    void delete_expression(ContextValue* contex_value)
+    {
+        delete contex_value->get_obj();
+        delete contex_value;
+    }
+
+    void delete_expressions(ContextValue* contex_value_l, ContextValue* contex_value_r)
+    {
+        delete contex_value_l->get_obj();
+        delete contex_value_r->get_obj();
+        delete contex_value_l;
+        delete contex_value_r;
+    }
+
 };

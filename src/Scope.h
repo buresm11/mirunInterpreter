@@ -33,7 +33,8 @@ public:
 
 	void remove_top_environment() 
 	{ 
-		if(environment->get_parent() != NULL) {
+		if(environment->get_parent() != NULL) 
+		{
 			Environment * tmp = this->environment;
 			this->environment = environment->get_parent();
 			delete tmp;

@@ -2,7 +2,6 @@
 #pragma once
 
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <map>
 
@@ -13,21 +12,37 @@
 #include "ArrayObj.h"
 #include "ContextValue.h"
 
-class Environment {
+class Environment 
+{
 	std::map<std::string, Obj *> variables;
 	Environment * parent;
 
 public:
 
-	Environment() {
+	Environment() 
+	{
 		this->parent = NULL;
 	}
 
-	Environment(Environment * environment) {
+	Environment(Environment * environment)
+	{
 		this->parent = environment;
 	}
 
-	Environment* get_parent() {
+	~Environment()
+	{
+		std::map<std::string, Obj *>::iterator it = variables.begin();
+ 
+ 		while (it != variables.end())
+		{
+			std::cout << "del ";
+			delete it->second;
+			it++;
+		}
+	}
+
+	Environment* get_parent() 
+	{
 		return parent;
 	}
 
@@ -55,20 +70,20 @@ public:
 		}
 	}
 
-	ContextValue* create_variable(std::string name, Obj * obj) {
-
+	ContextValue* create_variable(std::string name, Obj * obj) 
+	{
 		if (this->variables.insert(std::pair<std::string, Obj *>(name, obj)).second == false)
 		{
-			return new ContextValue(NULL, new Error(2, "Variable " + name + " is already defined in current scope" ));
+			return new ContextValue(NULL, new Error(7, "Variable " + name + " is already defined in current scope" ));
 		}
 		else
 		{
-			return new ContextValue(obj, NULL);
+			return new ContextValue();
 		}
 	}
 
-	ContextValue* set_variable(std::string name, Obj * obj) {
-
+	ContextValue* set_variable(std::string name, Obj * obj) 
+	{
 		std::map<std::string, Obj *>::iterator it;
 		it = variables.find(name);
 
@@ -76,7 +91,7 @@ public:
 		{
 			if(parent == NULL) 
 			{
-				return new ContextValue(NULL, new Error(7, "Variable " + name + " not found"));
+				return new ContextValue(NULL, new Error(8, "Variable " + name + " not found"));
 			} 
 			else return parent->set_variable(name, obj);
 		} 
@@ -84,14 +99,14 @@ public:
 		{
 			if (it->second->get_type() != obj->get_type())
 			{
-				return new ContextValue(NULL, new Error(8, "cannon assign to" + name + " bad type"));
+				return new ContextValue(NULL, new Error(9, "Cannon assign to" + name + " bad type"));
 			}
 			else 
 			{
 				delete it->second;
 				it->second = obj;
 
-			    return new ContextValue(obj, NULL);
+			    return new ContextValue();
 			}			
 		}
 	}
@@ -105,7 +120,7 @@ public:
 		{
 			if(parent == NULL)
 			{
-				return new ContextValue(NULL, new Error(7, "Variable " + name + " not found"));
+				return new ContextValue(NULL, new Error(8, "Variable " + name + " not found"));
 			}
 			else return parent->set_array_variable(name, obj, index);
 		} 
@@ -123,28 +138,27 @@ public:
 					{
 						delete array[index];
 						array[index] = obj;
-						return new ContextValue(obj, NULL);
+						return new ContextValue();
 					}
 					else
 					{
-						return new ContextValue(NULL, new Error(8, "cannon assign to" + name + " bad type"));
+						return new ContextValue(NULL, new Error(9, "Cannon assign to" + name + " bad type"));
 					}
 				}
 				else
 				{
-					return new ContextValue(NULL, new Error(10, "out of bounds"));
+					return new ContextValue(NULL, new Error(11, "Index out of bounds"));
 				}
 			}
 			else
 			{
-				return new ContextValue(NULL, new Error(9, "cannot do [] on non array"));
+				return new ContextValue(NULL, new Error(10, "Variable " + name + " not indexable"));
 			}
 		}
 	}
 
-	
-	ContextValue* look_up_variable(std::string name) {
-
+	ContextValue* look_up_variable(std::string name) 
+	{
 		std::map<std::string, Obj *>::iterator it;
 		it = variables.find(name);
 
@@ -152,16 +166,13 @@ public:
 		{
 			if(parent == NULL) 
 		  	{
-		  		return new ContextValue(NULL, new Error(7, "Variable " + name + " not found"));
+		  		return new ContextValue(NULL, new Error(8, "Variable " + name + " not found"));
 		  	}
 			else return parent->look_up_variable(name);
 		}
 		else 
 		{
-			if(it->second->get_type() == ArrayType)
-				return new ContextValue(it->second->copy(), NULL);
-			else
-				return new ContextValue(it->second->copy(), NULL);
+			return new ContextValue(it->second->copy(), NULL);
 		}
 	}
 	
@@ -174,7 +185,7 @@ public:
 		{
 			if(parent == NULL) 
 			{
-				return new ContextValue(NULL, new Error(7, "Variable " + name + " not found"));
+				return new ContextValue(NULL, new Error(8, "Variable " + name + " not found"));
 			}
 			else return parent->look_up_array_variable(name, index);
 		} 
@@ -192,12 +203,12 @@ public:
 				}
 				else 
 				{
-					return new ContextValue(NULL, new Error(10, "out of bounds"));
+					return new ContextValue(NULL, new Error(11, "Index out of bounds"));
 				}
 			}
 			else 
 			{
-				return new ContextValue(NULL, new Error(9, "cannot do [] on non array"));
+				return new ContextValue(NULL, new Error(10, "Variable " + name + " not indexable"));
 			}
 		}
 	} 
@@ -211,7 +222,7 @@ public:
 		{
 			if(parent == NULL) 
 		  	{
-		  		return new ContextValue(NULL, new Error(7, "Variable " + name + " not found"));
+		  		return new ContextValue(NULL, new Error(8, "Variable " + name + " not found"));
 		  	}
 			else return parent->look_up_variable(name);
 		}
@@ -230,7 +241,7 @@ public:
 		{
 			if(parent == NULL) 
 			{
-				return new ContextValue(NULL, new Error(7, "Variable " + name + " not found"));
+				return new ContextValue(NULL, new Error(8, "Variable " + name + " not found"));
 			}
 			else return parent->look_up_array_variable(name, index);
 		} 
@@ -248,12 +259,12 @@ public:
 				}
 				else 
 				{
-					return new ContextValue(NULL, new Error(10, "out of bounds"));
+					return new ContextValue(NULL, new Error(11, "Index out of bounds"));
 				}
 			}
 			else 
 			{
-				return new ContextValue(NULL, new Error(9, "cannot do [] on non array"));
+				return new ContextValue(NULL, new Error(10, "Variable " + name + " not indexable"));
 			}
 		}
 	} 

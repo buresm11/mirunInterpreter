@@ -25,6 +25,11 @@ public:
 			is_error = false;
 	}
 
+	~FuncArgDeclContext()
+	{
+		if(is_error) delete error;
+	}
+
 	FuncArg * get_func_arg()
 	{
 		return func_arg;

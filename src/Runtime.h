@@ -61,35 +61,33 @@ public:
 
 	ContextValue * invoke_function (std::string name, Obj ** params, int params_count);
 
-/// built-in functions
-
 	ContextValue * print(Obj * obj, bool newline)
 	{
-		if(obj->get_type() == IntType) return print((IntObj*)obj, newline);
-        else if(obj->get_type() == StringType) return print((StringObj*)obj, newline);
-        else if(obj->get_type() == BoolType) return print((BoolObj*)obj, newline);
-        else if(obj->get_type() == ArrayType) return print((ArrayObj*)obj, newline);
+		if(obj->get_type() == IntType) print((IntObj*)obj, newline);
+        else if(obj->get_type() == StringType) print((StringObj*)obj, newline);
+        else if(obj->get_type() == BoolType) print((BoolObj*)obj, newline);
+        else if(obj->get_type() == ArrayType) print((ArrayObj*)obj, newline);
         else 
         {
-            return new ContextValue(NULL, new Error(13, "Unknow type"));
+            return new ContextValue(NULL, new Error(13, "Unknown type"));
         }
+
+        return new ContextValue();
 	}
 
-	ContextValue * print(IntObj* int_obj, bool newline)
+	void print(IntObj* int_obj, bool newline)
 	{
 		std::cout << int_obj->get_value();
 		if(newline)std::cout << std::endl;
-		return new ContextValue(int_obj, NULL);
 	}
 
-	ContextValue * print(StringObj* string_obj, bool newline)
+	void print(StringObj* string_obj, bool newline)
 	{
 		std::cout << string_obj->get_value();
 		if(newline)std::cout << std::endl;
-		return new ContextValue(string_obj, NULL);
 	}
 
-	ContextValue * print(BoolObj* bool_obj, bool newline)
+	void print(BoolObj* bool_obj, bool newline)
 	{
 		if(bool_obj->get_value())
 		{
@@ -100,11 +98,9 @@ public:
 			std::cout << "False";
 		}
 		if(newline)std::cout << std::endl;
-		
-		return new ContextValue(bool_obj, NULL);
 	}
 
-	ContextValue * print(ArrayObj* array_obj, bool newline)
+	void * print(ArrayObj* array_obj, bool newline)
 	{
 		Obj ** array = array_obj->get_value();
 		int array_size = array_obj->get_array_size();
@@ -117,8 +113,6 @@ public:
 		}
 		std::cout << "]";
 		if(newline)std::cout << std::endl;
-
-		return new ContextValue(array_obj, NULL);
 	}
 
 	ContextValue * scan(std::string name, Scope * scope)
@@ -142,7 +136,10 @@ public:
 			return context_value;
 		}
 
-		return scan_variable(context_value->get_obj());
+		ContextValue * context_value_scan = scan_variable(context_value->get_obj());
+		delete context_value;
+
+		return context_value_scan;
 	}
 
 	ContextValue * scan_variable(Obj * obj)
@@ -152,7 +149,7 @@ public:
         else if(obj->get_type() == BoolType) return scan((BoolObj*)obj);
         else 
         {
-            return new ContextValue(NULL, new Error(13, "Unknow type"));
+            return new ContextValue(NULL, new Error(13, "Unknown type"));
         }
 	}
 
@@ -167,15 +164,15 @@ public:
 		} 
 		else if (std::cin.bad()) 
 		{
-		   return new ContextValue(NULL, NULL);// error TODO ERROR
+		   return new ContextValue(NULL, new Error(16, "IO error" ));
 		}
 		else if (std::cin.eof()) 
 		{
-		   return new ContextValue(NULL, NULL);// TODO ERROR
+		   return new ContextValue(NULL, new Error(17, "EOF reached" ));
 		} 
 		else 
 		{
-		   return new ContextValue(NULL, NULL); // TODO ERROR
+		   return new ContextValue(NULL, new Error(18, "Format problem" ));
 		}	
 	}
 
@@ -183,22 +180,22 @@ public:
 	{
 		std::string val;
 
-		if (std::cin >> val) 
+		if (std::cin >> val)
 		{
 			string_obj->set_value(val);
 			return new ContextValue(NULL, NULL);
 		} 
 		else if (std::cin.bad()) 
 		{
-		   return new ContextValue(NULL, NULL);// error TODO ERROR
+		   return new ContextValue(NULL, new Error(16, "IO error" ));
 		}
 		else if (std::cin.eof()) 
 		{
-		   return new ContextValue(NULL, NULL);// TODO ERROR
+		   return new ContextValue(NULL, new Error(17, "EOF reached" ));
 		} 
 		else 
 		{
-		   return new ContextValue(NULL, NULL); // TODO ERROR
+		   return new ContextValue(NULL, new Error(18, "Format problem" ));
 		}
 	}
 
@@ -206,22 +203,22 @@ public:
 	{
 		bool val;
 
-		if (std::cin >> val) 
+		if (std::cin >> val)
 		{
 			bool_obj->set_value(val);
 			return new ContextValue(NULL, NULL);
 		} 
 		else if (std::cin.bad()) 
 		{
-		   return new ContextValue(NULL, NULL);// error TODO ERROR
+		   return new ContextValue(NULL, new Error(16, "IO error" ));
 		}
 		else if (std::cin.eof()) 
 		{
-		   return new ContextValue(NULL, NULL);// TODO ERROR
+		   return new ContextValue(NULL, new Error(17, "EOF reached" ));
 		} 
 		else 
 		{
-		   return new ContextValue(NULL, NULL); // TODO ERROR
+		   return new ContextValue(NULL, new Error(18, "Format problem" ));
 		}
 	}
 

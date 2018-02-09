@@ -1,8 +1,14 @@
+int a;
+int b;
 
-int x;
-int y;
+a = 5;
+b = 10;
 
-x = 20;
-y = 5;
+if true do
+	a = 10;
+	int b;
+	int c;
+	int d;
+end
 
-print(x % "545");
+return 1;
