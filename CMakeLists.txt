@@ -4,7 +4,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
 
 # compiler must be 11 or 14
-SET (CMAKE_CXX_STANDARD 14)
+SET (CMAKE_CXX_STANDARD 11)
 
 # set variable pointing to the antlr tool that supports C++
 set(ANTLR4CPP_JAR_LOCATION ${PROJECT_SOURCE_DIR}/thirdparty/antlr/antlr-4.7.1-complete.jar)
@@ -40,8 +40,6 @@ FILE(GLOB src_files ${PROJECT_SOURCE_DIR}/src/*.cpp)
     )
 endforeach(src_file)
 
-
-message("xsss" ${ssrc})
 
   # export generated include directory
   set(antlr4cpp_include_dirs_${antlr4cpp_project_namespace} ${ANTLR4CPP_GENERATED_SRC_DIR}/${antlr4cpp_project_namespace})

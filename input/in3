@@ -67,6 +67,37 @@ def int insertion_sort(int array[], int count)
 	return 1;
 end
 
+def int merge( int ar1 [], int count1, int ar2 [], int count2, int out [])
+
+	int i;
+	int j;
+
+	int size;
+	size = count1 + count2;
+
+	while i + j < size do
+		if i < count1 && j < count2 do
+			if ar1[i] < ar2[j] do
+				out[i+j] = ar1[i];
+				i =i +1;
+			else do
+				out[i+j] = ar2[j];
+				j =j+1;
+			end
+
+		else if i < count1 do
+			out[i+j] = ar1[i];
+			i = i+1;
+		else if j < count2 do
+			out[i+j] = ar2[j];
+			j = j+1;
+		end
+
+	end
+	
+	return 1;
+end
+
 int n1;
 int n2;
 
@@ -117,5 +148,57 @@ insertion_sort(array, count);
 
 print("Sorted: ");
 println(array);
+
+int count1;
+
+print("Enter array size: ");
+scan(count1);
+
+int array1[count1];
+
+int x;
+x = 0;
+while x < count1 do
+	print("Enter ");
+	print(x);
+	print(" element: ");
+
+	scan(array1[x]);
+
+	x = x+1;
+end
+
+int count2;
+
+print("Enter array2 size: ");
+scan(count2);
+
+int array2[count2];
+
+int y;
+y = 0;
+while y < count2 do
+	print("Enter ");
+	print(y);
+	print(" element: ");
+
+	scan(array2[y]);
+
+	y = y+1;
+end
+
+insertion_sort(array1, count1);
+print("Sorted1: ");
+println(array1);
+
+insertion_sort(array2, count2);
+print("Sorted2: ");
+println(array2);
+
+int m[count1+count2];
+
+merge( array1, count1, array2, count2, m);
+print("Merged: ");
+print(m);
 
 return 1;

@@ -38,7 +38,7 @@ int main(int argc , char ** argv) {
 	tlParser parser(&tokens);
 	tree::ParseTree *tree = parser.parse();
 
-	//std::cout << tree->toStringTree(&parser) << std::endl;
+	std::cout << tree->toStringTree(&parser) << std::endl;
 
 	inputFile.close();
 

@@ -1,27 +1,33 @@
-Shooter
+Interpreter
 =======
 
-Description
+Interpreter for small static typed language.
 
-Instalace
+Get up
 ===============
 
+Install cmake 
 
-Spusteni
+`` iterpe
 
-Syntex jazyka
+Syntex
 ===============
 
 Variables
 ------------
 
+All variables must be initialized first.
+
 .. code-block:: c
 
-	int a;
-	bool b;
-	string c;
+	int a;     // initialized to zero
+	bool b;    // initialized to false
+	string c;  // initialized to empty string
 
-	int a [10]; //
+	int array[10]; // array 
+	bool array[10]; // array
+	string array[10]; // array
+
 
 
 Conditions

@@ -1,0 +1,21 @@
+
+
+def int create_arrays()
+
+	int i;
+
+	while i < 1000 do
+
+		print("Array ");
+		print(i);
+		println(" created");
+
+		int tmp[10];
+		i = i+1;
+	end
+	return 1;
+end
+
+create_arrays();
+
+return 1;

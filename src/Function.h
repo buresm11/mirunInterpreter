@@ -29,7 +29,7 @@ public:
 		{
 			delete arg_types[i];
 		}
-		delete [] arg_types;
+		if(arg_types_size > 0) delete [] arg_types;
 	}
 
 	FuncArg * get_return_type()
