@@ -6,9 +6,19 @@ Interpreter for small static typed language.
 Get up
 ===============
 
-Install cmake 
+Requirement
+-----------
+* cmake version > 3.5 (tested on version 3.5.1)
 
-`` iterpe
+`` clone repository ``
+`` mkdir build ``
+`` cmake .. ``
+`` make ``
+
+Running
+===============
+
+`` interpreter filename ``
 
 Syntex
 ===============
