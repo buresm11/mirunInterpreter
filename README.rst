@@ -10,17 +10,17 @@ Requirement
 -----------
 * cmake version > 3.5 (tested on version 3.5.1)
 
-``clone repository``
-``mkdir build``
-``cmake ..``
-``make``
+* ``clone repository``
+* ``mkdir build``
+* ``cmake ..``
+* ``make``
 
 Running
 ===============
 
 ``interpreter filename``
 
-Syntex
+Syntax
 ===============
 
 * top level acts like a function and must return an integer
@@ -48,7 +48,7 @@ Built-In functions
 
 * **print(object)** - prints any object
 * **println(object)** - prints any object and adds a newline
-* **scan(object)** - reads a value from user and stores it to object
+* **scan(object)** - reads a value from user and stores it into an object
 
 .. code-block:: c
 
@@ -94,7 +94,7 @@ Cycle
 		i=i+1;
 	end
 
-Functions decka
+Functions declaration
 ------------
 
 .. code-block:: c
@@ -141,29 +141,29 @@ Example
 Errors
 ------
 
-Error(1, "Unknown number"));
-Error(2, "Integer out of range"));
-Error(3, "Operator ? unsupported types" ));
-Error(4, "Index is not a number"));
-Error(5, "Unexpexted type " + type));
-Error(6, "Cannon create array sized 0"));
-Error(7, "Variable " + name + " is already defined in current scope" ));
-Error(8, "Variable " + name + " not found"));
-Error(9, "Cannon assign to" + name + " bad type"));
-Error(10, "Variable " + name + " not indexable"));
-Error(11, "Index out of bounds"));
-Error(12, "If | Elseif Condition is not bool"));
-Error(13, "Unknown type"));
-Error(14, "Syntax error"));
-Error(15, "Function " + name + " is already defined in current scope" ));
-Error(16, "IO error" ));
-Error(17, "EOF reached" ));
-Error(18, "Format problem" ));
-Error(19, "Function " + name + " not found"));
-Error(20, "Function call " + name + " incorrect number of arguments"));
-Error(21, "Function call " + name + " array arg type does not match"));
-Error(22, "Function call " + name + " arg array / nonarray mismatch"));
-Error(23, "Function call " + name + " arg type does not match"));
-Error(24, "Function call " + name + " missing return"));
-Error(25, "Heap full" ));
+* Error(1, "Unknown number"));
+* Error(2, "Integer out of range"));
+* Error(3, "Operator ? unsupported types" ));
+* Error(4, "Index is not a number"));
+* Error(5, "Unexpexted type " + type));
+* Error(6, "Cannon create array sized 0"));
+* Error(7, "Variable " + name + " is already defined in current scope" ));
+* Error(8, "Variable " + name + " not found"));
+* Error(9, "Cannon assign to" + name + " bad type"));
+* Error(10, "Variable " + name + " not indexable"));
+* Error(11, "Index out of bounds"));
+* Error(12, "If | Elseif Condition is not bool"));
+* Error(13, "Unknown type"));
+* Error(14, "Syntax error"));
+* Error(15, "Function " + name + " is already defined in current scope" ));
+* Error(16, "IO error" ));
+* Error(17, "EOF reached" ));
+* Error(18, "Format problem" ));
+* Error(19, "Function " + name + " not found"));
+* Error(20, "Function call " + name + " incorrect number of arguments"));
+* Error(21, "Function call " + name + " array arg type does not match"));
+* Error(22, "Function call " + name + " arg array / nonarray mismatch"));
+* Error(23, "Function call " + name + " arg type does not match"));
+* Error(24, "Function call " + name + " missing return"));
+* Error(25, "Heap full" ));
 
