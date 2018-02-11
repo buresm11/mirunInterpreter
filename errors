@@ -23,3 +23,4 @@ new Error(22, "Function call " + name + " arg array / nonarray mismatch"));
 new Error(23, "Function call " + name + " arg type does not match"));
 new Error(24, "Function call " + name + " missing return"));
 new Error(25, "Heap full" ));
+new Error(26, "Function call " + name + " return value does not match definition"));

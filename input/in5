@@ -1,0 +1,52 @@
+int a;
+
+a = 10;
+
+int b;
+
+b= 15;
+
+int c;
+
+c = a + b * b;
+
+int d[45];
+
+print("sdfdf");
+print(45+78+12);
+
+int z;
+scan(z);
+
+if a == b do
+	int x;
+	x = 1;
+else if a > b do
+	int x;
+	x = 3;
+else do
+	int x;
+	x = 2;
+end
+
+int i;
+i=1;
+
+while i < 100 do
+	int x;
+	x = 5;
+
+	i = i+1;
+end
+
+def int z()
+	return 1;
+end
+
+def int x(int a, string b, int a [])
+	return 5;
+end
+
+z();
+
+return 5;

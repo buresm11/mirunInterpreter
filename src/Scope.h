@@ -4,7 +4,6 @@
 #include "Obj.h"
 #include "Environment.h"
 
-
 class Scope
 {
 	Environment * environment;

@@ -51,6 +51,8 @@ public:
             delete it->second;
        	}
 		delete [] heap;
+
+		delete scope;
 	}
 
 	ContextValue * allocate_on_heap(Array * array)
@@ -100,13 +102,13 @@ public:
 		{
 			if(heap[i] != NULL)
 			{
-				if(heap[i]->is_marked())
+				if(!heap[i]->is_marked())
 				{
 					for(int j=0;j<heap[i]->get_array_size();j++)
 					{
 						delete heap[i]->get_array()[j];
 					}
-					delete heap[i]->get_array();
+					delete [] heap[i]->get_array();
 					delete heap[i];
 					heap[i] = NULL;
 				}
@@ -214,7 +216,9 @@ public:
 			return context_value;
 		}
 
-		return scan_variable(context_value->get_obj());
+		Obj * obj = context_value->get_obj();
+		delete context_value;
+		return scan_variable(obj);
 	}
 
 	ContextValue * scan(std::string name, int index, Scope * scope)
@@ -312,4 +316,12 @@ public:
 		}
 	}
 
+	void delete_args(Obj ** args, int args_size)
+	{
+		for(int i=0; i < args_size; i++)
+		{
+			delete args[i];
+		}
+		delete [] args;
+	}
 };

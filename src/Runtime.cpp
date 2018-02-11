@@ -11,6 +11,7 @@ ContextValue * Runtime::invoke_function (std::string name, Obj ** args, int args
 
 	if(it == functions.end())
 	{
+		delete_args(args, args_size);
 	  	return new ContextValue(NULL, new Error(19, "Function " + name + " not found"));
 	}
 	else 
@@ -21,6 +22,7 @@ ContextValue * Runtime::invoke_function (std::string name, Obj ** args, int args
 
 		if(func_args_size != args_size)
 		{
+			delete_args(args, args_size);
 			return new ContextValue(NULL, new Error(20, "Function call" + name + " incorrect number of arguments"));
 		}
 
@@ -32,11 +34,13 @@ ContextValue * Runtime::invoke_function (std::string name, Obj ** args, int args
 				{
 					if(func_args[i]->get_type() != ((ArrayObj*)args[i])->get_content_type())
 					{
+						delete_args(args, args_size);
 						return new ContextValue(NULL, new Error(21, "Function call " + name + " array arg type does not match"));
 					}
 				}
 				else
 				{
+					delete_args(args, args_size);
 					return new ContextValue(NULL, new Error(22, "Function call " + name + " arg array / nonarray mismatch"));
 				}
 			}
@@ -44,22 +48,22 @@ ContextValue * Runtime::invoke_function (std::string name, Obj ** args, int args
 			{
 				if(func_args[i]->get_type() != args[i]->get_type())
 				{
+					delete_args(args, args_size);
 					return new ContextValue(NULL, new Error(23, "Function call " + name + " arg type does not match"));
 				}
 			}
 		}
 
 		Visitor visitor(this);
-
 		Scope * scope = visitor.get_scope();
 
-		for(int i=0;i<func_args_size;i++)
+		for(int i=0;i<args_size;i++)
 		{
 			ContextValue * context_value_arg = scope->current_environment()->create_variable(func_args[i]->get_name(), args[i]);
 
 			if(context_value_arg->has_error())
 			{
-				for(int j=i; j < func_args_size; j++)
+				for(int j=i; j < args_size; j++)
 				{
 					delete args[i];
 				}
@@ -87,26 +91,11 @@ ContextValue * Runtime::invoke_function (std::string name, Obj ** args, int args
 
 		FuncArg * func_return_type = found_function->get_return_type();
 
-		if(func_return_type->is_array())
+        if(func_return_type->get_type() != return_value->get_obj()->get_type())
         {
-            if(return_value->get_obj()->get_type() == ArrayType)
-            {
-                if(func_return_type->get_type() != ((ArrayObj*)return_value->get_obj())->get_content_type())
-                {
-                    return new ContextValue(NULL, new Error(21, "Function call " + name + " array arg type does not match"));
-                }
-            }
-            else
-            {
-                return new ContextValue(NULL, new Error(22, "Function call " + name + " arg array / nonarray mismatch"));
-            }
-        }
-        else
-        {
-            if(func_return_type->get_type() != return_value->get_obj()->get_type())
-            {
-                return new ContextValue(NULL, new Error(23, "Function call " + name + " arg type does not match"));
-            }
+        	delete return_value->get_obj();
+        	delete return_value;
+            return new ContextValue(NULL, new Error(26, "Function call " + name + " return value does not match definition"));
         }
 
 		return return_value;

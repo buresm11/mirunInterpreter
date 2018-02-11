@@ -213,7 +213,11 @@ public:
         Array * array = new Array(var, index);
         Obj * array_var = new ArrayObj( array, type_content);
 
-        runtime->allocate_on_heap(array);
+        ContextValue * context_value_allocate = runtime->allocate_on_heap(array);
+
+        if(context_value_allocate->has_error()) return context_value_allocate;
+        else delete context_value_allocate;
+
         return scope->current_environment()->create_variable(name, array_var);
     }
 
@@ -235,11 +239,15 @@ public:
             int index = ((IntObj *)context_value_index->get_obj())->get_value();
             delete_expression(context_value_index);
 
-            return scope->current_environment()->set_array_variable(context->Identifier()->getText(), context_value_expression->get_obj(), index); 
+            Obj * obj = context_value_expression->get_obj();
+            delete context_value_expression;
+            return scope->current_environment()->set_array_variable(context->Identifier()->getText(), obj, index); 
         }
         else
         {
-            return scope->current_environment()->set_variable(context->Identifier()->getText(), context_value_expression->get_obj());  
+            Obj * obj = context_value_expression->get_obj();
+            delete context_value_expression;
+            return scope->current_environment()->set_variable(context->Identifier()->getText(), obj);  
         }
     }
 
@@ -316,8 +324,8 @@ public:
             if(contex_value_if_block->has_error() || contex_value_if_block->has_done())
             {
                 return contex_value_if_block;
-            } 
-            
+            }
+            delete contex_value_if_block;
         }
         return context_value_expression;
     }
@@ -348,6 +356,7 @@ public:
             {
                 return contex_value_else_if_block;
             }
+            delete contex_value_else_if_block;
         }
         return context_value_expression;
     }
@@ -363,6 +372,8 @@ public:
         {
             return contex_value_else_block;
         }
+        delete contex_value_else_block;
+
         return new ContextValue();
     }
 
@@ -382,12 +393,17 @@ public:
             if(context_value_expression->get_obj()->get_type() != BoolType)
             {
                 delete_expression(context_value_expression);
-                return new ContextValue(NULL, new Error(12, "If Condition is not bool"));
+                return new ContextValue(NULL, new Error(12, "While Condition is not bool"));
             }
 
-            if(!((BoolObj*)context_value_expression->get_obj())->get_value()) break;
+            if(!((BoolObj*)context_value_expression->get_obj())->get_value())
+            {
+                delete_expression(context_value_expression);
+                break;
+            }
             else
             {
+                delete_expression(context_value_expression);
                 scope->create_new_environment();
                 ContextValue * contex_value_else_block = visit(context->block());
                 scope->remove_top_environment();
@@ -395,6 +411,7 @@ public:
                 {
                     return contex_value_else_block;
                 }
+                delete contex_value_else_block;
             }
         }
         return new ContextValue();
@@ -414,6 +431,8 @@ public:
         std::string name = func_decl_context_type->get_func_arg()->get_name();
         FuncArg * return_type = func_decl_context_type->get_func_arg();
 
+        delete func_decl_context_type;
+
         Function * function;
         if(context->func_decl_type_list() == NULL)
         {
@@ -431,6 +450,9 @@ public:
                     for(int j=0;j<func_decl_context_args.size();j++)
                     {
                         delete func_decl_context_args.at(j)->get_func_arg();
+                    }
+                    for(int j=i;j<func_decl_context_args.size();j++)
+                    {
                         delete func_decl_context_args.at(j);
                     }
                     delete [] args;
@@ -438,6 +460,7 @@ public:
                     return ContextValue(NULL, new Error(func_decl_context_args.at(i)->get_error()->get_id(), func_decl_context_args.at(i)->get_error()->get_text()));
                 }
                 args[i] = func_decl_context_args.at(i)->get_func_arg();
+                delete func_decl_context_args.at(i);
             }
             function = new Function(context->block(), return_type, args, func_decl_context_args.size());
         }
@@ -616,6 +639,11 @@ public:
     {
         int args_size = expressions.size();
 
+        if(args_size == 0)
+        {
+            return runtime->invoke_function(name, NULL, args_size);
+        }
+
         Obj ** args = new Obj*[args_size];
 
         for(int i=0;i< args_size; i++)
@@ -661,8 +689,8 @@ public:
             return context_value_expression;
         }
 
-        Obj * return_value = context_value_expression->get_obj();
-        return new ContextValue(return_value, NULL, true);
+        context_value_expression->set_done(true);
+        return context_value_expression;
     }
 
     antlrcpp::Any visitIdentifierExpression(tlParser::IdentifierExpressionContext *context)

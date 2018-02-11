@@ -166,4 +166,4 @@ Errors
 * Error(23, "Function call " + name + " arg type does not match"));
 * Error(24, "Function call " + name + " missing return"));
 * Error(25, "Heap full" ));
-
+* Error(26, "Function call " + name + " return value does not match definition"));
