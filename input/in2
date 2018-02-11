@@ -1,0 +1,83 @@
+
+int count;
+
+print("Enter array size: ");
+scan(count);
+
+int array[count];
+
+int i;
+i = 0;
+while i < count do
+	print("Enter ");
+	print(i);
+	print(" element: ");
+
+	scan(array[i]);
+
+	i = i+1;
+end
+
+println(array);
+
+
+int max;
+
+int j;
+j=0;
+
+while j < count do
+	if array[j] > max do
+		max = array[j];
+	end
+	j = j+1;
+end
+
+print("Max: ");
+println(max);
+
+
+int copy[count];
+
+int e;
+e = 0;
+
+while e < count do
+	copy[e] = array[e];
+	e = e+1;
+end
+
+int f;
+f = 1;
+
+while f < count do
+	copy[f] = copy[f] + copy[f-1];
+	f = f + 1;
+end
+
+println(copy);
+
+int x;
+x = 1;
+
+while x < count do
+	int y;
+	y = x;
+
+	while y > 0 do
+
+		if array[y-1] > array[y] do
+			int tmp;
+			tmp = array[y-1];
+			array[y-1] = array[y];
+			array[y] = tmp;
+		end
+
+		y = y-1;
+	end
+	x = x+1;
+end
+
+println(array);
+
+return 1;

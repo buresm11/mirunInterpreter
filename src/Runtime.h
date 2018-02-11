@@ -13,37 +13,127 @@
 #include "Environment.h"
 #include "Scope.h"
 #include "Function.h"
+#include "Array.h"
 
 #define HEAP_SIZE 500
+#define HEAP_THRESHOLD 400
 
 class Visitor;
 
 class Runtime {
 
-	Obj *** heap;
+	Array ** heap;
 	int allocated_records;
 	std::map<std::string, Function *> functions;
+
+	Scope * scope;
 
 public:
 
 	Runtime() 
 	{
-		this->heap = new Obj**[HEAP_SIZE];
+		this->heap = new Array*[HEAP_SIZE];
+		for(int i=0;i<HEAP_SIZE;i++)
+		{
+			this->heap[i] = NULL;
+		}
 		this->allocated_records = 0;
+		this->scope = NULL;
 	}
 
-	void allocate_on_heap(Obj ** obj)
-	 {
+	~Runtime()
+	{
+		sweep();
+
+		std::map<std::string, Function *>::iterator it;
+       	for (it = functions.begin(); it != functions.end(); it++)
+       	{
+            delete it->second;
+       	}
+		delete [] heap;
+	}
+
+	ContextValue * allocate_on_heap(Array * array)
+	{
 		int slot = find_empty_slot();
-		heap[slot] = obj;
+
+		if(slot < 0)
+		{
+			return new ContextValue(NULL, new Error(25, "Heap full" ));
+		}
+
+		allocated_records++;
+		heap[slot] = array;
+
+		return new ContextValue();
 	}
 
 	int find_empty_slot()
 	{
+		if(allocated_records > HEAP_THRESHOLD)
+		{
+			clean();
+		}
+
 		for(int i=0;i<HEAP_SIZE;i++)
 		{
-			if(heap[i] == NULL)
-				return i;
+			if(heap[i] == NULL) return i;
+		}
+
+		return -1;
+	}
+
+	void clean()
+	{
+		mark();
+		sweep();
+	}
+
+	void mark()
+	{
+		scope->mark();
+	}
+
+	void sweep()
+	{
+		for(int i=0;i<HEAP_SIZE;i++)
+		{
+			if(heap[i] != NULL)
+			{
+				if(heap[i]->is_marked())
+				{
+					for(int j=0;j<heap[i]->get_array_size();j++)
+					{
+						delete heap[i]->get_array()[j];
+					}
+					delete heap[i]->get_array();
+					delete heap[i];
+					heap[i] = NULL;
+				}
+			}
+		}
+	}
+
+	Scope * create_new_scope()
+	{
+		Scope * new_scope = new Scope(scope);
+		this->scope = new_scope;
+
+		return this->scope;
+	}
+
+	Scope * get_current_scope()
+	{
+		return scope;
+	}
+
+	void remove_top_scope()
+	{
+		if(scope->get_parent() != NULL)
+		{
+			Scope * tmp = this->scope;
+			this->scope = scope->get_parent();
+			delete tmp;
 		}
 	}
 
@@ -203,7 +293,7 @@ public:
 	{
 		bool val;
 
-		if (std::cin >> val)
+		if (std::cin >> std::boolalpha >> val)
 		{
 			bool_obj->set_value(val);
 			return new ContextValue(NULL, NULL);

@@ -22,6 +22,16 @@ public:
 		arg_types_size = 0;
 	}
 
+	~Function()
+	{
+		delete return_type;
+		for(int i=0;i<arg_types_size;i++)
+		{
+			delete arg_types[i];
+		}
+		delete [] arg_types;
+	}
+
 	FuncArg * get_return_type()
 	{
 		return return_type;
@@ -41,5 +51,4 @@ public:
 	{
 		return block;
 	}
-
 };

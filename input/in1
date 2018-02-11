@@ -1,0 +1,123 @@
+
+int a;
+int b;
+
+a = 5;
+b = 10;
+
+print("a: ");
+println(a);
+
+print("b: ");
+println(b);
+
+print("a + b:   ");
+println(a + b);
+
+print("a * b:   ");
+println(a * b);
+
+print("a - b:   ");
+println(a - b);
+
+print("a / b:   ");
+println(a / b);
+
+print("a % b:   ");
+println(a % b);
+
+print("a == b:   ");
+println(a == b);
+
+print("a != b:   ");
+println(a != b);
+
+print("a > b:   ");
+println(a > b);
+
+print("a < b:   ");
+println(a < b);
+
+print("a >= b:   ");
+println(a >= b);
+
+print("a <= b:   ");
+println(a <= b);
+
+println("----------------");
+
+bool c;
+bool d;
+
+c = true;
+d = false;
+
+print("c: ");
+println(c);
+
+print("d: ");
+println(d);
+
+print("c == d:   ");
+println(c == d);
+
+print("c != d:   ");
+println(c != d);
+
+print("c && d:   ");
+println(c && d);
+
+print("a || b:   ");
+println(c || d);
+
+println("----------------");
+
+string s1;
+string s2;
+
+s1 = "abc";
+s2 = "xyz";
+
+print("s1: ");
+println(s1);
+
+print("s2: ");
+println(s2);
+
+
+print("s1 == s2:   ");
+println(s1 == s2);
+
+print("s1 != s2:   ");
+println(s1 != s2);
+
+print("s1 + s2:   ");
+println(s1 + s2);
+
+println("----------------");
+
+print("Enter int: ")
+int a_int [10];
+scan(a_int[5]);
+
+println(a_int);
+
+println("----------------");
+
+print("Enter string: ")
+string a_string [10];
+scan(a_string[5]);
+
+println(a_string);
+
+println("----------------");
+
+print("Enter bool: ")
+bool a_bool [10];
+scan(a_bool[5]);
+
+println(a_bool);
+
+println("----------------");
+
+return 1;

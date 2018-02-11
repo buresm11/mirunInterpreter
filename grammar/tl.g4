@@ -98,7 +98,7 @@ expression
  | expression '||' expression               #orExpression
  | Number                                   #numberExpression
  | Bool                                     #boolExpression
- | function_call index?                     #functionCallExpression
+ | Identifier '(' (expression (',' expression)*)? ')'                     #functionCallExpression
  | Identifier index?                        #identifierExpression
  | String                                   #stringExpression
  ;

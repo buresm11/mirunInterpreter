@@ -16,24 +16,11 @@ new Error(15, "Function " + name + " is already defined in current scope" ));
 new Error(16, "IO error" ));
 new Error(17, "EOF reached" ));
 new Error(18, "Format problem" ));
+new Error(19, "Function " + name + " not found"));
+new Error(20, "Function call " + name + " incorrect number of arguments"));
+new Error(21, "Function call " + name + " array arg type does not match"));
+new Error(22, "Function call " + name + " arg array / nonarray mismatch"));
+new Error(23, "Function call " + name + " arg type does not match"));
+new Error(24, "Function call " + name + " missing return"));
+new Error(25, "Heap full" ));
 
-
-
-new Error(1, 'Unexpexted type')
-new Error(2, "Variable " + name + " is already defined in current scope" ));
-new Error(3, "Index is not a number"));
-new Error(4, "Unknown number")
-new Error(5, "Integer out of range")
-new Error(6, "Cannon create array sized 0")
-new Error(7, "Variable " + name + " not found"));
-new Error(8, "cannon assign to" + name + " bad type"));
-new Error(9, "cannot do [] on non array"));
-new Error(10, "out of bounds"));
-new Error(11, "types do not match"));
-new Error(12, "operation do not supperted"));
-new Error(13, "Unknow type"));
-new Error(14, "Syntax error"));
-new Error(15, "Function " + name + " is already defined in current scope" ));
-new Error(16, "Function " + name + " not found"));
-new Error(17, "Incorrect number of arguments"));
-new Error(18, "Arguments do not match"));

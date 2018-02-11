@@ -35,7 +35,6 @@ public:
  
  		while (it != variables.end())
 		{
-			std::cout << "del ";
 			delete it->second;
 			it++;
 		}
@@ -44,6 +43,23 @@ public:
 	Environment* get_parent() 
 	{
 		return parent;
+	}
+
+	void mark()
+	{
+		for (std::map<std::string, Obj *>::iterator it=variables.begin(); it!=variables.end(); ++it)
+		{
+			if(it->second->get_type() == ArrayType)
+			{
+				ArrayObj * array_obj = (ArrayObj*)it->second;
+				array_obj->mark();
+			}
+		}
+
+		if(parent != NULL)
+		{
+			parent->mark();
+		}
 	}
 
 	void show_variable()
@@ -224,7 +240,7 @@ public:
 		  	{
 		  		return new ContextValue(NULL, new Error(8, "Variable " + name + " not found"));
 		  	}
-			else return parent->look_up_variable(name);
+			else return parent->look_up_scan_variable(name);
 		}
 		else 
 		{
@@ -243,7 +259,7 @@ public:
 			{
 				return new ContextValue(NULL, new Error(8, "Variable " + name + " not found"));
 			}
-			else return parent->look_up_array_variable(name, index);
+			else return parent->look_up_array_scan_variable(name, index);
 		} 
 		else 
 		{

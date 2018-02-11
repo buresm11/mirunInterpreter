@@ -651,8 +651,9 @@ public:
   public:
     FunctionCallExpressionContext(ExpressionContext *ctx);
 
-    Function_callContext *function_call();
-    IndexContext *index();
+    antlr4::tree::TerminalNode *Identifier();
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
 

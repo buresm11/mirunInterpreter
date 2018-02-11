@@ -17,7 +17,7 @@
 #include "FuncArg.h"
 #include "Scope.h"
 
-#define DEBUG_ENABLED
+//#define DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
 #define Debug(x) std::cout << x;
@@ -31,18 +31,11 @@ class Visitor : public tlVisitor
 {
     Runtime * runtime;
     Scope * scope;
-    FuncArg * func_return_type;
-
-    bool return_value_set;
-    ContextValue * context_return_value;
 
 public:
     Visitor(Runtime * runtime) : runtime(runtime)
     {
-        scope = new Scope();
-        return_value_set = false;
-        context_return_value = NULL;
-        func_return_type = NULL;
+        scope = runtime->create_new_scope();
     }
 
     Scope * get_scope()
@@ -217,9 +210,10 @@ public:
            return new ContextValue(NULL, new Error(5, "Unexpexted type " + type));
         }
 
-        Obj * array_var = new ArrayObj(index, var, type_content);
-        runtime->allocate_on_heap(var);
+        Array * array = new Array(var, index);
+        Obj * array_var = new ArrayObj( array, type_content);
 
+        runtime->allocate_on_heap(array);
         return scope->current_environment()->create_variable(name, array_var);
     }
 
@@ -439,7 +433,7 @@ public:
                         delete func_decl_context_args.at(j)->get_func_arg();
                         delete func_decl_context_args.at(j);
                     }
-                    delete args;
+                    delete [] args;
 
                     return ContextValue(NULL, new Error(func_decl_context_args.at(i)->get_error()->get_id(), func_decl_context_args.at(i)->get_error()->get_text()));
                 }
@@ -607,21 +601,33 @@ public:
     {
         Debug(": function" << std::endl);
 
-        std::string name = context->Identifier()->getText();
-        int args_size = context->expression().size();
+        ContextValue * context_value_func = invoke(context->Identifier()->getText(), context->expression());
+
+        if(context_value_func->has_error())
+        {
+            return context_value_func;
+        }
+
+        delete_expression(context_value_func);
+        return new ContextValue();
+    }
+
+    ContextValue * invoke(std::string name, std::vector<tlParser::ExpressionContext *> expressions)
+    {
+        int args_size = expressions.size();
 
         Obj ** args = new Obj*[args_size];
 
         for(int i=0;i< args_size; i++)
         {
-            ContextValue * context_value_expression = visit(context->expression().at(i));
+            ContextValue * context_value_expression = visit(expressions.at(i));
             if(context_value_expression->has_error()) 
             {
-                for(int i=0;i< args_size; i++)
+                for(int j=0; j<i; j++)
                 {
                     delete args[i];
                 }
-                delete args;
+                delete [] args;
 
                 return context_value_expression;
             }
@@ -629,8 +635,20 @@ public:
             {
                 args[i] = context_value_expression->get_obj();
             }
+
+            delete context_value_expression;
         }
+
         return runtime->invoke_function(name, args, args_size);
+    }
+
+    antlrcpp::Any visitFunctionCallExpression(tlParser::FunctionCallExpressionContext *context)
+    {
+        Debug(": function_call_expression" << std::endl);
+
+        ContextValue * context_value_func = invoke(context->Identifier()->getText(), context->expression());
+
+        return context_value_func;
     }
 
     antlrcpp::Any visitReturn_statement(tlParser::Return_statementContext *context)
@@ -645,55 +663,6 @@ public:
 
         Obj * return_value = context_value_expression->get_obj();
         return new ContextValue(return_value, NULL, true);
-    }
-
-
-    antlrcpp::Any visitFunctionCallExpression(tlParser::FunctionCallExpressionContext *context)
-    {
-        Debug(": function_call_expression" << std::endl);
-
-        ContextValue * func_call_context_value = visit(context->function_call());
-
-        if(func_call_context_value->has_error())
-        {
-            return func_call_context_value;
-        }
-
-        if(context->index() != NULL)
-        {
-            ContextValue * context_value_index = visit(context->index()); //delete index
-            if(context_value_index->has_error()) 
-            {
-                return context_value_index;
-            }
-            else
-            {
-                Obj * returned_obj = func_call_context_value->get_obj();
-                if(returned_obj->get_type() == ArrayType)
-                {
-                    int index = ((IntObj *)context_value_index->get_obj())->get_value();
-                    Obj ** array = ((ArrayObj*)returned_obj)->get_value();
-                    int array_size = ((ArrayObj*)returned_obj)->get_array_size();
-
-                    if(index > 0 && index < array_size)
-                    {
-                        return array[index];
-                    }
-                    else
-                    {
-                        // not in
-                    }
-                }
-                else
-                {
-                    // error
-                }
-            }
-        }
-        else
-        {
-            return func_call_context_value;  
-        }
     }
 
     antlrcpp::Any visitIdentifierExpression(tlParser::IdentifierExpressionContext *context)

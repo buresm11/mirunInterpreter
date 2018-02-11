@@ -11,7 +11,7 @@ ContextValue * Runtime::invoke_function (std::string name, Obj ** args, int args
 
 	if(it == functions.end())
 	{
-	  	return new ContextValue(NULL, new Error(16, "Function " + name + " not found"));
+	  	return new ContextValue(NULL, new Error(19, "Function " + name + " not found"));
 	}
 	else 
 	{
@@ -21,7 +21,7 @@ ContextValue * Runtime::invoke_function (std::string name, Obj ** args, int args
 
 		if(func_args_size != args_size)
 		{
-			return new ContextValue(NULL, new Error(17, "Incorrect number of arguments"));
+			return new ContextValue(NULL, new Error(20, "Function call" + name + " incorrect number of arguments"));
 		}
 
 		for(int i=0;i<args_size;i++)
@@ -32,30 +32,44 @@ ContextValue * Runtime::invoke_function (std::string name, Obj ** args, int args
 				{
 					if(func_args[i]->get_type() != ((ArrayObj*)args[i])->get_content_type())
 					{
-						return new ContextValue(NULL, new Error(18, "aArguments do not match"));
+						return new ContextValue(NULL, new Error(21, "Function call " + name + " array arg type does not match"));
 					}
 				}
 				else
 				{
-					return new ContextValue(NULL, new Error(18, "vArguments do not match"));
+					return new ContextValue(NULL, new Error(22, "Function call " + name + " arg array / nonarray mismatch"));
 				}
 			}
 			else
 			{
 				if(func_args[i]->get_type() != args[i]->get_type())
 				{
-					return new ContextValue(NULL, new Error(18, "aArguments do not match"));
+					return new ContextValue(NULL, new Error(23, "Function call " + name + " arg type does not match"));
 				}
 			}
 		}
 
 		Visitor visitor(this);
+
 		Scope * scope = visitor.get_scope();
 
 		for(int i=0;i<func_args_size;i++)
 		{
-			scope->current_environment()->create_variable(func_args[i]->get_name(), args[i]);
+			ContextValue * context_value_arg = scope->current_environment()->create_variable(func_args[i]->get_name(), args[i]);
+
+			if(context_value_arg->has_error())
+			{
+				for(int j=i; j < func_args_size; j++)
+				{
+					delete args[i];
+				}
+				delete [] args;
+				remove_top_scope();
+				return context_value_arg;
+			}
 		}
+
+		delete [] args;
 
 		ContextValue * return_value = visitor.visit(found_function->get_block());
 
@@ -65,10 +79,11 @@ ContextValue * Runtime::invoke_function (std::string name, Obj ** args, int args
 		}
 		if(return_value->has_done() == false)
 		{
-			return new ContextValue(NULL, new Error(18, "454564"));
+			return new ContextValue(NULL, new Error(24, "Function call " + name + " missing return"));
 		}
 
 		return_value->set_done(false);
+		remove_top_scope();
 
 		FuncArg * func_return_type = found_function->get_return_type();
 
@@ -78,19 +93,19 @@ ContextValue * Runtime::invoke_function (std::string name, Obj ** args, int args
             {
                 if(func_return_type->get_type() != ((ArrayObj*)return_value->get_obj())->get_content_type())
                 {
-                    return new ContextValue(NULL, new Error(18, "aArguments do not match"));
+                    return new ContextValue(NULL, new Error(21, "Function call " + name + " array arg type does not match"));
                 }
             }
             else
             {
-                return new ContextValue(NULL, new Error(18, "v99Arguments do not match"));
+                return new ContextValue(NULL, new Error(22, "Function call " + name + " arg array / nonarray mismatch"));
             }
         }
         else
         {
             if(func_return_type->get_type() != return_value->get_obj()->get_type())
             {
-                return new ContextValue(NULL, new Error(18, "aArguments do not match"));
+                return new ContextValue(NULL, new Error(23, "Function call " + name + " arg type does not match"));
             }
         }
 

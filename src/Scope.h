@@ -8,16 +8,29 @@
 class Scope
 {
 	Environment * environment;
+	Scope * parent;
 
 public:
-	Scope() 
+	Scope(Scope * parent) : parent(parent) 
 	{
 		environment = new Environment();
 	}
 
 	~Scope()
 	{
-		delete environment;
+		Environment * env = environment;
+
+		while(env != NULL)
+		{
+			Environment * env_parent = env->get_parent();
+			delete env;
+			env = env_parent;
+		}
+	}
+
+	Scope * get_parent()
+	{
+		return parent;
 	}
 
 	Environment * current_environment()
@@ -39,5 +52,11 @@ public:
 			this->environment = environment->get_parent();
 			delete tmp;
 		}
+	}
+
+	void mark()
+	{
+		environment->mark();
+		if(parent != NULL) parent->mark();
 	}
 };

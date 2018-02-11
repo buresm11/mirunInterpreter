@@ -1,0 +1,121 @@
+
+def int max(int x, int y)
+	if x > y do
+		return x;
+	else do
+		return y;
+	end
+end
+
+def int fact(int n)
+	if n == 1 do
+		return 1;
+	else do
+		return n * fact(n-1);
+	end
+end
+
+def int fib_seq(int n)
+	int array[n];
+
+	int i;
+	i = 0;
+
+	while i < n do
+		array[i] = fib(i);
+		i=i+1;
+	end
+
+	print("Fibonacci sequence: ");
+	println(array);
+
+	return 1;
+
+end
+
+def int fib(int n)
+	if n == 0 || n == 1 do
+		return 1;
+	else do
+		return fib(n-1) + fib(n-2);
+	end
+end
+
+
+def int insertion_sort(int array[], int count)
+	int x;
+	x = 1;
+
+	while x < count do
+		int y;
+		y = x;
+
+		while y > 0 do
+
+			if array[y-1] > array[y] do
+				int tmp;
+				tmp = array[y-1];
+				array[y-1] = array[y];
+				array[y] = tmp;
+			end
+
+			y = y-1;
+		end
+		x = x+1;
+	end
+
+	return 1;
+end
+
+int n1;
+int n2;
+
+print("Enter number 1: ");
+scan(n1);
+
+print("Enter number 2: ");
+scan(n2);
+
+print("Max: ");
+println(max(n1,n2));
+
+int number;
+
+print("Enter number: ");
+scan(number);
+print("Factorial: ");
+println(fact(number));
+
+int number2;
+
+print("Enter number: ");
+scan(number2);
+fib_seq(number2);
+
+int count;
+
+print("Enter array size: ");
+scan(count);
+
+int array[count];
+
+int i;
+i = 0;
+while i < count do
+	print("Enter ");
+	print(i);
+	print(" element: ");
+
+	scan(array[i]);
+
+	i = i+1;
+end
+
+println(array);
+
+insertion_sort(array, count);
+
+print("Sorted: ");
+println(array);
+
+return 1;
