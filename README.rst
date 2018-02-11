@@ -10,10 +10,10 @@ Requirement
 -----------
 * cmake version > 3.5 (tested on version 3.5.1)
 
-* ``clone repository``
-* ``mkdir build``
-* ``cmake ..``
-* ``make``
+| ``clone repository``  
+| ``mkdir build``  
+| ``cmake ..``  
+| ``make``  
 
 Running
 ===============
