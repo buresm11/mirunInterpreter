@@ -175,7 +175,7 @@ Comment
  : ('//' ~[\r\n]* | '/*' .*? '*/') -> skip
  ;
 
-Space
+ Space
  : [ \t\r\n\u000C] -> skip
  ;
 

@@ -8,7 +8,7 @@ Get up
 
 Requirement
 -----------
-* cmake version > 3.5 (tested on version 3.5.1)
+* cmake version >= 3.5 (tested on version 3.5.1)
 
 | ``clone repository``  
 | ``mkdir build``  
@@ -25,7 +25,7 @@ Syntax
 
 * top level acts like a function and must return an integer
 * primitive variables are passed by value
-* arrays are passed by pointer
+* arrays are passed by reference
 
 Variables
 ------------

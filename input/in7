@@ -1,7 +1,0 @@
-int n1;
-int n2;
-
-string s;
-s = "Enter number 1: ";
-
-print(s);

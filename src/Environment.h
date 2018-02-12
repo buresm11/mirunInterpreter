@@ -35,7 +35,6 @@ public:
  
  		while (it != variables.end())
 		{
-			std::cout << "DSfsdfsd" << std::endl;
 			delete it->second;
 			it++;
 		}

@@ -755,7 +755,7 @@ public:
     {
         Debug(": string_expression" << std::endl);
 
-        std::string string = "";//context->String()->getText();//.substr(1, context->String()->getText().size() -2 );
+        std::string string = context->String()->getText().substr(1, context->String()->getText().size() -2 );
         return new ContextValue(new StringObj(string), NULL);
     }
 
