@@ -153,18 +153,12 @@ public:
 
 	ContextValue * invoke_function (std::string name, Obj ** params, int params_count);
 
-	ContextValue * print(Obj * obj, bool newline)
+	void * print(Obj * obj, bool newline)
 	{
 		if(obj->get_type() == IntType) print((IntObj*)obj, newline);
         else if(obj->get_type() == StringType) print((StringObj*)obj, newline);
         else if(obj->get_type() == BoolType) print((BoolObj*)obj, newline);
         else if(obj->get_type() == ArrayType) print((ArrayObj*)obj, newline);
-        else 
-        {
-            return new ContextValue(NULL, new Error(13, "Unknown type"));
-        }
-
-        return new ContextValue();
 	}
 
 	void print(IntObj* int_obj, bool newline)

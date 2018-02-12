@@ -69,13 +69,17 @@ ContextValue * Runtime::invoke_function (std::string name, Obj ** args, int args
 				}
 				delete [] args;
 				remove_top_scope();
+
 				return context_value_arg;
 			}
+			delete context_value_arg;
 		}
 
 		delete [] args;
 
 		ContextValue * return_value = visitor.visit(found_function->get_block());
+		remove_top_scope();
+
 
 		if(return_value->has_error())
 		{
@@ -87,7 +91,6 @@ ContextValue * Runtime::invoke_function (std::string name, Obj ** args, int args
 		}
 
 		return_value->set_done(false);
-		remove_top_scope();
 
 		FuncArg * func_return_type = found_function->get_return_type();
 

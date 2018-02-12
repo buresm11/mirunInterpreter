@@ -323,10 +323,12 @@ public:
             scope->remove_top_environment();
             if(contex_value_if_block->has_error() || contex_value_if_block->has_done())
             {
+                delete_expression(context_value_expression);
                 return contex_value_if_block;
             }
             delete contex_value_if_block;
         }
+
         return context_value_expression;
     }
 
@@ -354,6 +356,7 @@ public:
             scope->remove_top_environment();
             if(contex_value_else_if_block->has_error() || contex_value_else_if_block->has_done()) 
             {
+                delete_expression(context_value_expression);
                 return contex_value_else_if_block;
             }
             delete contex_value_else_if_block;
@@ -396,22 +399,23 @@ public:
                 return new ContextValue(NULL, new Error(12, "While Condition is not bool"));
             }
 
-            if(!((BoolObj*)context_value_expression->get_obj())->get_value())
+            bool ex = ((BoolObj*)context_value_expression->get_obj())->get_value();
+            delete_expression(context_value_expression);
+
+            if(!ex)
             {
-                delete_expression(context_value_expression);
                 break;
             }
             else
             {
-                delete_expression(context_value_expression);
                 scope->create_new_environment();
-                ContextValue * contex_value_else_block = visit(context->block());
+                ContextValue * contex_value_while_block = visit(context->block());
                 scope->remove_top_environment();
-                if(contex_value_else_block->has_error() || contex_value_else_block->has_done())
+                if(contex_value_while_block->has_error() || contex_value_while_block->has_done())
                 {
-                    return contex_value_else_block;
+                    return contex_value_while_block;
                 }
-                delete contex_value_else_block;
+                delete contex_value_while_block;
             }
         }
         return new ContextValue();
@@ -567,15 +571,8 @@ public:
             return context_value_expression;
         }
 
-        ContextValue * context_value_print = runtime->print(context_value_expression->get_obj(), false);
-
-        if(context_value_print->has_error())
-        {
-            return context_value_print;
-        }
-
+        runtime->print(context_value_expression->get_obj(), false);
         delete_expression(context_value_expression);
-        delete context_value_print;
         return new ContextValue();
     }
 
@@ -590,15 +587,8 @@ public:
             return context_value_expression;
         }
 
-        ContextValue * context_value_print = runtime->print(context_value_expression->get_obj(), true);
-
-        if(context_value_print->has_error())
-        {
-            return context_value_print;
-        }
-
+        runtime->print(context_value_expression->get_obj(), true);
         delete_expression(context_value_expression);
-        delete context_value_print;
         return new ContextValue();
     }
 
@@ -765,7 +755,7 @@ public:
     {
         Debug(": string_expression" << std::endl);
 
-        std::string string = context->String()->getText().substr(1, context->String()->getText().size() -2 );
+        std::string string = "";//context->String()->getText();//.substr(1, context->String()->getText().size() -2 );
         return new ContextValue(new StringObj(string), NULL);
     }
 
